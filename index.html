@@ -196,8 +196,8 @@
   <div class="form-group" style="margin-top:10px;">
     <label>تصنيف السؤال</label>
     <div class="toggle-group">
-      <button type="button" id="btn-type-quant" class="selected" onclick="selectQuestionType('كمي')">كمي</button>
-      <button type="button" id="btn-type-verbal" onclick="selectQuestionType('لفظي')">لفظي</button>
+      <button type="button" id="btn-type-quant" onclick="selectQuestionType('كمي')">كمي</button>
+      <button type="button" id="btn-type-verbal" class="selected" onclick="selectQuestionType('لفظي')">لفظي</button>
     </div>
   </div>
   <div class="form-group">
@@ -345,7 +345,8 @@ const dbOps = {
   })
 };
 
-let currentQuestionType = 'كمي';
+// Default question type set to 'لفظي'
+let currentQuestionType = 'لفظي';
 
 window.addEventListener('DOMContentLoaded', async () => {
   await initDB();
@@ -355,6 +356,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 function openModal(id) {
   if (id === 'modal-section' || id === 'modal-question') syncGroupDropdowns();
   if (id === 'modal-word') syncWordGroupDropdown();
+  if (id === 'modal-question') selectQuestionType('لفظي'); // Reset to verbal each time modal opens
   document.getElementById(id).showModal();
 }
 function closeModal(id) { document.getElementById(id).close(); }
@@ -720,7 +722,7 @@ function buildQuestionCard(q, isCompleted = false) {
   card.innerHTML = `
     <div class="item-card-header">
       <div>
-        <span class="badge ${q.type === 'كمي' ? 'badge-quant' : 'badge-verbal'}">${q.type || 'كمي'}</span>
+        <span class="badge ${q.type === 'كمي' ? 'badge-quant' : 'badge-verbal'}">${q.type || 'لفظي'}</span>
         <span style="font-weight:600; margin-right:6px;">${q.text}</span>
       </div>
       <div style="display:flex; align-items:center; gap:4px;">
@@ -815,7 +817,7 @@ function renderQuizPage() {
     qDiv.id = `q-node-${q.id}`;
     qDiv.innerHTML = `
       <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-        <strong>سؤال ${idx + 1} (${q.type || 'كمي'}): ${q.text}</strong>
+        <strong>سؤال ${idx + 1} (${q.type || 'لفظي'}): ${q.text}</strong>
         <button type="button" class="star-btn ${q.starred ? 'starred' : ''}" onclick="toggleStar('questions', '${q.id}'); this.classList.toggle('starred');">★</button>
       </div>
       <div id="q-media-${q.id}"></div>
@@ -1087,7 +1089,7 @@ async function importJSON(e) {
       const existingSections = await dbOps.getAll('sections');
 
       for (const item of data) {
-        // إذا كان العنصر مفردة
+        // مفردة
         if (item.word && item.meaning) {
           let wg = (await dbOps.getAll('wordGroups')).find(g => g.name === (item.group || 'مفردات عامة'));
           if (!wg) {
@@ -1105,7 +1107,7 @@ async function importJSON(e) {
           continue;
         }
 
-        // إذا كان العنصر سؤالاً
+        // سؤال
         let group = existingGroups.find(g => g.name === item.group);
         if (!group) {
           group = { id: 'g_' + Date.now() + Math.random(), name: item.group };
@@ -1129,7 +1131,7 @@ async function importJSON(e) {
           id: 'q_' + Date.now() + Math.random(),
           groupId: group.id,
           sectionId: section.id,
-          type: item.type === 'لفظي' ? 'لفظي' : 'كمي',
+          type: item.type === 'كمي' ? 'كمي' : 'لفظي', // الافتراضي هنا أيضاً لفظي في حال لم يُحدد
           text: item.text,
           options: item.options,
           correct: Number(item.correct),
