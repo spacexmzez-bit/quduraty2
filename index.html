@@ -213,13 +213,13 @@
     <textarea id="q-text" rows="3"></textarea>
   </div>
   <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-    <div class="form-group"><label>خيار أ</label><input type="text" id="opt-0"></div>
-    <div class="form-group"><label>خيار ب</label><input type="text" id="opt-1"></div>
-    <div class="form-group"><label>خيار ج</label><input type="text" id="opt-2"></div>
-    <div class="form-group"><label>خيار د</label><input type="text" id="opt-3"></div>
+    <div class="form-group"><label>خيار أ</label><input type="text" id="opt-0" placeholder="(اختياري إن لم يلزم)"></div>
+    <div class="form-group"><label>خيار ب</label><input type="text" id="opt-1" placeholder="(اختياري)"></div>
+    <div class="form-group"><label>خيار ج</label><input type="text" id="opt-2" placeholder="(اختياري)"></div>
+    <div class="form-group"><label>خيار د</label><input type="text" id="opt-3" placeholder="(اختياري)"></div>
   </div>
   <div class="form-group">
-    <label>الخيار الصحيح</label>
+    <label>الخيار الصحيح (تأكد من تعبئة الحقل المقابل له أعلاه)</label>
     <select id="q-correct">
       <option value="0">خيار أ</option>
       <option value="1">خيار ب</option>
@@ -345,7 +345,6 @@ const dbOps = {
   })
 };
 
-// Default question type set to 'لفظي'
 let currentQuestionType = 'لفظي';
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -356,7 +355,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 function openModal(id) {
   if (id === 'modal-section' || id === 'modal-question') syncGroupDropdowns();
   if (id === 'modal-word') syncWordGroupDropdown();
-  if (id === 'modal-question') selectQuestionType('لفظي'); // Reset to verbal each time modal opens
+  if (id === 'modal-question') selectQuestionType('لفظي');
   document.getElementById(id).showModal();
 }
 function closeModal(id) { document.getElementById(id).close(); }
@@ -433,17 +432,38 @@ async function saveQuestion() {
   const groupId = document.getElementById('q-group-select').value;
   const sectionId = document.getElementById('q-section-select').value;
   const text = document.getElementById('q-text').value.trim();
-  const opts = [
+  
+  const rawOpts = [
     document.getElementById('opt-0').value.trim(),
     document.getElementById('opt-1').value.trim(),
     document.getElementById('opt-2').value.trim(),
     document.getElementById('opt-3').value.trim()
   ];
-  const correct = parseInt(document.getElementById('q-correct').value, 10);
+  const selectedCorrectIdx = parseInt(document.getElementById('q-correct').value, 10);
   const file = document.getElementById('q-file').files[0];
 
   if (!groupId || !sectionId) return alert('يجب تحديد المجموعة والقسم أولاً');
-  if (!text || opts.some(o => !o)) return alert('أكمل نص السؤال والخيارات الأربعة');
+  if (!text) return alert('أدخل نص السؤال');
+
+  // استخراج الخيارات غير الفارغة فقط
+  const validOptsWithOriginalIdx = rawOpts
+    .map((opt, idx) => ({ opt, idx }))
+    .filter(item => item.opt !== '');
+
+  // شرط وجود خيار واحد على الأقل
+  if (validOptsWithOriginalIdx.length === 0) {
+    return alert('يجب إدخال خيار واحد على الأقل للسؤال');
+  }
+
+  // التأكد من أن الحقل المختار كإجابة صحيحة ليس فارغاً
+  if (!rawOpts[selectedCorrectIdx]) {
+    return alert('الحقل المختار كإجابة صحيحة فارغ. يرجى كتابة الخيار أو اختيار حرف خيار تم تعبئته.');
+  }
+
+  // حساب الفهرس الجديد للإجابة الصحيحة ضمن القائمة المفلترة
+  const correctOptionText = rawOpts[selectedCorrectIdx];
+  const filteredOpts = validOptsWithOriginalIdx.map(item => item.opt);
+  const newCorrectIndex = filteredOpts.indexOf(correctOptionText);
 
   let fileId = null;
   if (file) {
@@ -459,15 +479,15 @@ async function saveQuestion() {
     sectionId,
     type: currentQuestionType,
     text,
-    options: opts,
-    correct,
+    options: filteredOpts,
+    correct: newCorrectIndex,
     fileId,
     completed: false,
     starred: false
   });
 
   document.getElementById('q-text').value = '';
-  opts.forEach((_, i) => document.getElementById(`opt-${i}`).value = '');
+  rawOpts.forEach((_, i) => document.getElementById(`opt-${i}`).value = '');
   document.getElementById('q-file').value = '';
   closeModal('modal-question');
   refreshUI();
@@ -585,7 +605,6 @@ async function refreshUI() {
     dbOps.getAll('words')
   ]);
 
-  // Update Starred Count
   const starredQuestions = questions.filter(q => q.starred);
   document.getElementById('starred-count').innerText = starredQuestions.length;
 
@@ -732,7 +751,7 @@ function buildQuestionCard(q, isCompleted = false) {
       </div>
     </div>
     <div class="options-grid">
-      ${q.options.map((opt, i) => `
+      ${(q.options || []).map((opt, i) => `
         <div class="option-cell ${i === q.correct ? 'correct' : ''}">
           ${String.fromCharCode(65 + i)}:${opt}
         </div>
@@ -822,7 +841,7 @@ function renderQuizPage() {
       </div>
       <div id="q-media-${q.id}"></div>
       <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
-        ${q.options.map((opt, i) => `
+        ${(q.options || []).map((opt, i) => `
           <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#0b1120; border:1px solid var(--border); border-radius:6px; cursor:pointer;" id="opt-lbl-${q.id}-${i}">
             <input type="radio" name="ans-${q.id}" value="${i}">
             <span>${opt}</span>
@@ -857,12 +876,12 @@ function submitQuiz(e) {
     } else {
       feedback.innerHTML = `
         <div style="padding:10px; background:#450a0a; border-radius:6px; color:#fca5a5;">
-          إجابة خاطئة ✗ | الإجابة الصحيحة هي: <strong>${q.options[q.correct]}</strong>
+          إجابة خاطئة ✗ | الإجابة الصحيحة هي: <strong>${q.options[q.correct] || ''}</strong>
         </div>
       `;
     }
 
-    q.options.forEach((_, i) => {
+    (q.options || []).forEach((_, i) => {
       const lbl = document.getElementById(`opt-lbl-${q.id}-${i}`);
       if (i === q.correct) lbl.style.borderColor = 'var(--success)';
       if (val === i && !isCorrect) lbl.style.borderColor = 'var(--danger)';
@@ -1089,7 +1108,6 @@ async function importJSON(e) {
       const existingSections = await dbOps.getAll('sections');
 
       for (const item of data) {
-        // مفردة
         if (item.word && item.meaning) {
           let wg = (await dbOps.getAll('wordGroups')).find(g => g.name === (item.group || 'مفردات عامة'));
           if (!wg) {
@@ -1107,7 +1125,6 @@ async function importJSON(e) {
           continue;
         }
 
-        // سؤال
         let group = existingGroups.find(g => g.name === item.group);
         if (!group) {
           group = { id: 'g_' + Date.now() + Math.random(), name: item.group };
@@ -1127,13 +1144,16 @@ async function importJSON(e) {
           existingSections.push(section);
         }
 
+        // تصفية خيارات الـ JSON من الحقول الفارغة
+        const cleanOptions = (item.options || []).filter(o => o && String(o).trim() !== '');
+
         await dbOps.put('questions', {
           id: 'q_' + Date.now() + Math.random(),
           groupId: group.id,
           sectionId: section.id,
-          type: item.type === 'كمي' ? 'كمي' : 'لفظي', // الافتراضي هنا أيضاً لفظي في حال لم يُحدد
+          type: item.type === 'كمي' ? 'كمي' : 'لفظي',
           text: item.text,
-          options: item.options,
+          options: cleanOptions,
           correct: Number(item.correct),
           fileId: null,
           completed: false,
