@@ -1,0 +1,632 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بنك أخطاء القدرات</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-border: #334155;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 24px 16px; line-height: 1.5; }
+    .container { max-width: 1000px; margin: 0 auto; }
+
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--panel-border); padding-bottom: 16px; }
+    h1 { font-size: 1.5rem; color: var(--primary); }
+    .nav-tabs { display: flex; gap: 8px; }
+    button { background: var(--panel); color: var(--text); border: 1px solid var(--panel-border); padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
+    button:hover { border-color: var(--primary); }
+    button.primary { background: var(--primary); color: #000; font-weight: 600; border: none; }
+    button.primary:hover { background: var(--primary-hover); color: #fff; }
+    button.success { background: var(--success); color: #fff; border: none; }
+    button.danger { background: var(--danger); color: #fff; border: none; }
+    button.active { border-color: var(--primary); background: #1e3a8a; }
+
+    .card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+    label { font-size: 0.85rem; color: var(--text-muted); }
+    input, select, textarea { background: #0f172a; border: 1px solid var(--panel-border); color: #fff; padding: 10px; border-radius: 6px; font-size: 0.95rem; }
+    input:focus, select:focus, textarea:focus { outline: 1px solid var(--primary); border-color: var(--primary); }
+
+    .media-preview { margin-top: 10px; max-width: 100%; max-height: 320px; border-radius: 8px; object-fit: contain; }
+    .pdf-link { display: inline-block; margin-top: 8px; color: var(--primary); text-decoration: underline; cursor: pointer; }
+
+    .group-header { display: flex; justify-content: space-between; align-items: center; background: #1e3a5f; padding: 12px 16px; border-radius: 8px; margin-top: 24px; margin-bottom: 12px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; border-right: 4px solid var(--primary); padding: 8px 12px; margin-bottom: 12px; border-radius: 4px; }
+    .question-card { background: #131d31; border: 1px solid var(--panel-border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
+    .option-item { background: #0f172a; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--panel-border); font-size: 0.9rem; }
+    .option-item.correct { border-color: var(--success); color: var(--success); }
+    .option-item.wrong { border-color: var(--danger); color: var(--danger); }
+
+    /* Quiz Mode Styles */
+    .quiz-question { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+    .quiz-options { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .quiz-choice { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #0f172a; border: 1px solid var(--panel-border); border-radius: 6px; cursor: pointer; }
+    .quiz-choice input { accent-color: var(--primary); }
+    .review-box { margin-top: 16px; padding: 12px; border-radius: 6px; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>منصة مراجعة أخطاء القدرات</h1>
+    <div class="nav-tabs">
+      <button id="tab-manage" class="active" onclick="switchView('manage')">إدارة الأسئلة</button>
+      <button id="tab-completed" onclick="switchView('completed')">مكتملة المراجعة</button>
+      <button id="tab-quiz" style="display:none;" onclick="switchView('quiz')">جلسة الاختبار</button>
+    </div>
+  </header>
+
+  <!-- VIEW: Manage Questions & Groups -->
+  <div id="view-manage">
+    <!-- Top Global Actions -->
+    <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <button class="primary" onclick="startQuiz('all')">اختبار كافة الأسئلة النشطة</button>
+        <button onclick="toggleModal('modal-group')">+ مجموعة جديدة</button>
+        <button onclick="toggleModal('modal-section')">+ قسم جديد</button>
+        <button onclick="toggleModal('modal-question')">+ سؤال يدوي</button>
+      </div>
+      <div>
+        <input type="file" id="json-input" accept=".json" style="display: none;" onchange="importJSON(event)">
+        <button onclick="document.getElementById('json-input').click()">استيراد JSON Parser</button>
+      </div>
+    </div>
+
+    <!-- Active List Tree -->
+    <div id="active-tree"></div>
+  </div>
+
+  <!-- VIEW: Completed Questions -->
+  <div id="view-completed" style="display: none;">
+    <div class="card">
+      <p style="color: var(--text-muted); margin-bottom: 16px;">الأسئلة التي تمت مراجعتها بنجاح ونقلها من قائمة الأخطاء النشطة:</p>
+      <div id="completed-list"></div>
+    </div>
+  </div>
+
+  <!-- VIEW: Quiz (Google Forms Style) -->
+  <div id="view-quiz" style="display: none;">
+    <div id="quiz-container"></div>
+  </div>
+</div>
+
+<!-- MODAL: Add Group -->
+<dialog id="modal-group" class="card" style="margin: auto; width: 400px; color: var(--text);">
+  <h3>إضافة مجموعة رئيسية</h3>
+  <div class="form-group" style="margin-top: 12px;">
+    <label>اسم المجموعة (مثال: محوسب نموذج 120، تجميعات 2026)</label>
+    <input type="text" id="group-name">
+  </div>
+  <div style="display: flex; gap: 8px; justify-content: flex-end;">
+    <button onclick="toggleModal('modal-group')">إلغاء</button>
+    <button class="primary" onclick="saveGroup()">حفظ</button>
+  </div>
+</dialog>
+
+<!-- MODAL: Add Section -->
+<dialog id="modal-section" class="card" style="margin: auto; width: 400px; color: var(--text);">
+  <h3>إضافة قسم لمجموعة</h3>
+  <div class="form-group" style="margin-top: 12px;">
+    <label>اختر المجموعة</label>
+    <select id="section-group-select"></select>
+  </div>
+  <div class="form-group">
+    <label>اسم القسم (مثال: الهندسة، استيعاب المقروء، التناظر)</label>
+    <input type="text" id="section-name">
+  </div>
+  <div style="display: flex; gap: 8px; justify-content: flex-end;">
+    <button onclick="toggleModal('modal-section')">إلغاء</button>
+    <button class="primary" onclick="saveSection()">حفظ</button>
+  </div>
+</dialog>
+
+<!-- MODAL: Add Manual Question -->
+<dialog id="modal-question" class="card" style="margin: auto; width: 600px; max-height: 90vh; overflow-y: auto; color: var(--text);">
+  <h3>إضافة سؤال يدوي</h3>
+  <div class="grid-2" style="margin-top: 12px;">
+    <div class="form-group">
+      <label>المجموعة</label>
+      <select id="q-group-select" onchange="populateModalSections()"></select>
+    </div>
+    <div class="form-group">
+      <label>القسم</label>
+      <select id="q-section-select"></select>
+    </div>
+  </div>
+  <div class="form-group">
+    <label>نص السؤال</label>
+    <textarea id="q-text" rows="3"></textarea>
+  </div>
+  <div class="grid-2">
+    <div class="form-group"><label>الخيار أ</label><input type="text" id="opt-0"></div>
+    <div class="form-group"><label>الخيار ب</label><input type="text" id="opt-1"></div>
+    <div class="form-group"><label>الخيار ج</label><input type="text" id="opt-2"></div>
+    <div class="form-group"><label>الخيار د</label><input type="text" id="opt-3"></div>
+  </div>
+  <div class="form-group">
+    <label>الإجابة الصحيحة</label>
+    <select id="q-correct">
+      <option value="0">الخيار أ</option>
+      <option value="1">الخيار ب</option>
+      <option value="2">الخيار ج</option>
+      <option value="3">الخيار د</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>إرفاق صورة (بحد أقصى 4MB) أو مستند PDF (بحد أقصى 20MB)</label>
+    <input type="file" id="q-file" accept="image/*,application/pdf">
+  </div>
+  <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px;">
+    <button onclick="toggleModal('modal-question')">إلغاء</button>
+    <button class="primary" onclick="saveManualQuestion()">حفظ السؤال</button>
+  </div>
+</dialog>
+
+<script>
+/**
+ * IndexedDB Layer
+ * Handles Large Assets (Images up to 4MB, PDF up to 20MB)
+ */
+let db;
+const DB_NAME = 'QuduratErrorsDB';
+const DB_VERSION = 1;
+
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = (e) => {
+      const dbInstance = e.target.result;
+      if (!dbInstance.objectStoreNames.contains('groups')) dbInstance.createObjectStore('groups', { keyPath: 'id' });
+      if (!dbInstance.objectStoreNames.contains('sections')) dbInstance.createObjectStore('sections', { keyPath: 'id' });
+      if (!dbInstance.objectStoreNames.contains('questions')) dbInstance.createObjectStore('questions', { keyPath: 'id' });
+      if (!dbInstance.objectStoreNames.contains('files')) dbInstance.createObjectStore('files', { keyPath: 'id' });
+    };
+    request.onsuccess = (e) => { db = e.target.result; resolve(); };
+    request.onerror = (e) => reject(e.target.error);
+  });
+}
+
+function dbTx(storeName, mode, callback) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(storeName, mode);
+    const store = tx.objectStore(storeName);
+    const req = callback(store);
+    tx.oncomplete = () => resolve(req ? req.result : undefined);
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+const dbOps = {
+  getAll: (store) => dbTx(store, 'readonly', (s) => s.getAll()),
+  put: (store, data) => dbTx(store, 'readwrite', (s) => s.put(data)),
+  get: (store, id) => dbTx(store, 'readonly', (s) => s.get(id)),
+  delete: (store, id) => dbTx(store, 'readwrite', (s) => s.delete(id))
+};
+
+// Application State
+let activeQuizQuestions = [];
+let quizSubmitted = false;
+
+window.addEventListener('DOMContentLoaded', async () => {
+  await initDB();
+  renderApp();
+});
+
+function toggleModal(id) {
+  const modal = document.getElementById(id);
+  if (modal.open) {
+    modal.close();
+  } else {
+    if (id === 'modal-section' || id === 'modal-question') syncDropdowns();
+    modal.showModal();
+  }
+}
+
+function switchView(view) {
+  document.getElementById('view-manage').style.display = view === 'manage' ? 'block' : 'none';
+  document.getElementById('view-completed').style.display = view === 'completed' ? 'block' : 'none';
+  document.getElementById('view-quiz').style.display = view === 'quiz' ? 'block' : 'none';
+
+  document.getElementById('tab-manage').classList.toggle('active', view === 'manage');
+  document.getElementById('tab-completed').classList.toggle('active', view === 'completed');
+  document.getElementById('tab-quiz').classList.toggle('active', view === 'quiz');
+
+  if (view === 'manage' || view === 'completed') renderApp();
+}
+
+async function syncDropdowns() {
+  const groups = await dbOps.getAll('groups');
+  const sections = await dbOps.getAll('sections');
+
+  const populate = (elemId, items) => {
+    const el = document.getElementById(elemId);
+    el.innerHTML = items.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
+  };
+
+  populate('section-group-select', groups);
+  populate('q-group-select', groups);
+  populateModalSections();
+}
+
+async function populateModalSections() {
+  const groupId = document.getElementById('q-group-select').value;
+  const sections = await dbOps.getAll('sections');
+  const filtered = sections.filter(s => s.groupId === groupId);
+  const el = document.getElementById('q-section-select');
+  el.innerHTML = filtered.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+async function saveGroup() {
+  const name = document.getElementById('group-name').value.trim();
+  if (!name) return alert('الرجاء إدخال اسم المجموعة');
+  const id = 'g_' + Date.now();
+  await dbOps.put('groups', { id, name });
+  document.getElementById('group-name').value = '';
+  toggleModal('modal-group');
+  renderApp();
+}
+
+async function saveSection() {
+  const name = document.getElementById('section-name').value.trim();
+  const groupId = document.getElementById('section-group-select').value;
+  if (!name || !groupId) return alert('تأكد من اختيار المجموعة وإدخال اسم القسم');
+  const id = 's_' + Date.now();
+  await dbOps.put('sections', { id, name, groupId });
+  document.getElementById('section-name').value = '';
+  toggleModal('modal-section');
+  renderApp();
+}
+
+async function processFileInput(file) {
+  if (!file) return null;
+  const isImage = file.type.startsWith('image/');
+  const isPDF = file.type === 'application/pdf';
+
+  if (isImage && file.size > 4 * 1024 * 1024) throw new Error('حجم الصورة يتجاوز الحد الأقصى (4MB)');
+  if (isPDF && file.size > 20 * 1024 * 1024) throw new Error('حجم ملف الـ PDF يتجاوز الحد الأقصى (20MB)');
+  if (!isImage && !isPDF) throw new Error('نوع الملف غير مدعوم. يدعم فقط الصور وملفات PDF');
+
+  const fileId = 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+  await dbOps.put('files', { id: fileId, data: file, type: file.type, name: file.name });
+  return fileId;
+}
+
+async function saveManualQuestion() {
+  try {
+    const groupId = document.getElementById('q-group-select').value;
+    const sectionId = document.getElementById('q-section-select').value;
+    const text = document.getElementById('q-text').value.trim();
+    const options = [
+      document.getElementById('opt-0').value.trim(),
+      document.getElementById('opt-1').value.trim(),
+      document.getElementById('opt-2').value.trim(),
+      document.getElementById('opt-3').value.trim()
+    ];
+    const correct = parseInt(document.getElementById('q-correct').value, 10);
+    const file = document.getElementById('q-file').files[0];
+
+    if (!groupId || !sectionId || !text || options.some(o => !o)) {
+      return alert('الرجاء إكمال كافة حقول السؤال والخيارات');
+    }
+
+    const fileId = await processFileInput(file);
+
+    const question = {
+      id: 'q_' + Date.now(),
+      groupId,
+      sectionId,
+      text,
+      options,
+      correct,
+      fileId,
+      completed: false
+    };
+
+    await dbOps.put('questions', question);
+    toggleModal('modal-question');
+    document.getElementById('q-text').value = '';
+    options.forEach((_, i) => document.getElementById(`opt-${i}`).value = '');
+    document.getElementById('q-file').value = '';
+    renderApp();
+  } catch (err) {
+    alert(err.message);
+  }
+}
+
+/**
+ * JSON Parser
+ * Supports payload array format:
+ * [
+ *   {
+ *     "group": "تجميعات 2026",
+ *     "section": "الجبر",
+ *     "text": "سؤال...",
+ *     "options": ["1", "2", "3", "4"],
+ *     "correct": 0
+ *   }
+ * ]
+ */
+async function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    try {
+      const items = JSON.parse(event.target.result);
+      if (!Array.isArray(items)) throw new Error('الملف يجب أن يحتوي على قائمة (Array) من الأسئلة');
+
+      const existingGroups = await dbOps.getAll('groups');
+      const existingSections = await dbOps.getAll('sections');
+
+      for (const item of items) {
+        let group = existingGroups.find(g => g.name === item.group);
+        if (!group) {
+          group = { id: 'g_' + Date.now() + Math.random(), name: item.group };
+          await dbOps.put('groups', group);
+          existingGroups.push(group);
+        }
+
+        let section = existingSections.find(s => s.name === item.section && s.groupId === group.id);
+        if (!section) {
+          section = { id: 's_' + Date.now() + Math.random(), name: item.section, groupId: group.id };
+          await dbOps.put('sections', section);
+          existingSections.push(section);
+        }
+
+        const q = {
+          id: 'q_' + Date.now() + Math.random(),
+          groupId: group.id,
+          sectionId: section.id,
+          text: item.text,
+          options: item.options,
+          correct: Number(item.correct),
+          fileId: null,
+          completed: false
+        };
+        await dbOps.put('questions', q);
+      }
+      alert('تم الاستيراد بنجاح');
+      renderApp();
+    } catch (err) {
+      alert('فشل استيراد الملف: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function renderApp() {
+  const groups = await dbOps.getAll('groups');
+  const sections = await dbOps.getAll('sections');
+  const questions = await dbOps.getAll('questions');
+
+  const treeContainer = document.getElementById('active-tree');
+  treeContainer.innerHTML = '';
+
+  const activeQuestions = questions.filter(q => !q.completed);
+  const completedQuestions = questions.filter(q => q.completed);
+
+  // Render Groups & Sections
+  groups.forEach(group => {
+    const groupSections = sections.filter(s => s.groupId === group.id);
+    const groupQCount = activeQuestions.filter(q => q.groupId === group.id).length;
+
+    const groupDiv = document.createElement('div');
+    groupDiv.innerHTML = `
+      <div class="group-header">
+        <div>
+          <span style="font-weight: bold; font-size: 1.1rem;">المجموعة: ${group.name}</span>
+          <span style="color: var(--text-muted); font-size: 0.85rem; margin-right: 8px;">(${groupQCount} سؤال نشط)</span>
+        </div>
+        <div>
+          <button class="primary" onclick="startQuiz('group', '${group.id}')">اختبار المجموعة</button>
+        </div>
+      </div>
+    `;
+
+    groupSections.forEach(section => {
+      const sectionQuestions = activeQuestions.filter(q => q.sectionId === section.id);
+      const sectionDiv = document.createElement('div');
+      sectionDiv.style.marginRight = '20px';
+      sectionDiv.innerHTML = `
+        <div class="section-header">
+          <div>
+            <strong>قسم: ${section.name}</strong>
+            <span style="color: var(--text-muted); font-size: 0.85rem; margin-right: 8px;">(${sectionQuestions.length} سؤال)</span>
+          </div>
+          <div>
+            <button onclick="startQuiz('section', '${section.id}')">اختبار القسم</button>
+          </div>
+        </div>
+      `;
+
+      const qListDiv = document.createElement('div');
+      sectionQuestions.forEach(q => {
+        const qCard = createQuestionCard(q, false);
+        qListDiv.appendChild(qCard);
+      });
+
+      sectionDiv.appendChild(qListDiv);
+      groupDiv.appendChild(sectionDiv);
+    });
+
+    treeContainer.appendChild(groupDiv);
+  });
+
+  // Render Completed View
+  const completedList = document.getElementById('completed-list');
+  completedList.innerHTML = '';
+  if (completedQuestions.length === 0) {
+    completedList.innerHTML = '<p style="color: var(--text-muted);">لا توجد أسئلة مكتملة بعد.</p>';
+  } else {
+    completedQuestions.forEach(q => {
+      const card = createQuestionCard(q, true);
+      completedList.appendChild(card);
+    });
+  }
+}
+
+function createQuestionCard(q, isCompleted) {
+  const card = document.createElement('div');
+  card.className = 'question-card';
+  card.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <p style="font-weight: 500;">${q.text}</p>
+      ${!isCompleted ? `<button class="success" style="font-size: 0.8rem;" onclick="markCompleted('${q.id}')">انتهت المراجعة</button>` : ''}
+    </div>
+    <div class="options-grid">
+      ${q.options.map((opt, i) => `
+        <div class="option-item ${i === q.correct ? 'correct' : ''}">
+          ${String.fromCharCode(65 + i)}:${opt}
+        </div>
+      `).join('')}
+    </div>
+    <div id="media-holder-${q.id}"></div>
+  `;
+  if (q.fileId) renderMedia(q.fileId, card.querySelector(`#media-holder-${q.id}`));
+  return card;
+}
+
+async function renderMedia(fileId, targetElement) {
+  const record = await dbOps.get('files', fileId);
+  if (!record) return;
+
+  const url = URL.createObjectURL(record.data);
+  if (record.type.startsWith('image/')) {
+    const img = document.createElement('img');
+    img.src = url;
+    img.className = 'media-preview';
+    targetElement.appendChild(img);
+  } else if (record.type === 'application/pdf') {
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.className = 'pdf-link';
+    link.textContent = `عرض ملف مرفق (${record.name})`;
+    targetElement.appendChild(link);
+  }
+}
+
+async function markCompleted(questionId) {
+  const question = await dbOps.get('questions', questionId);
+  if (!question) return;
+  question.completed = true;
+  await dbOps.put('questions', question);
+  renderApp();
+}
+
+/**
+ * Quiz Engine (Forms Style)
+ */
+async function startQuiz(type, targetId = null) {
+  const questions = await dbOps.getAll('questions');
+  let selected = questions.filter(q => !q.completed);
+
+  if (type === 'group') selected = selected.filter(q => q.groupId === targetId);
+  if (type === 'section') selected = selected.filter(q => q.sectionId === targetId);
+
+  if (selected.length === 0) return alert('لا توجد أسئلة نشطة متاحة لهذا الاختبار.');
+
+  activeQuizQuestions = selected;
+  quizSubmitted = false;
+
+  document.getElementById('tab-quiz').style.display = 'block';
+  switchView('quiz');
+  renderQuiz();
+}
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-container');
+  container.innerHTML = `
+    <div class="card" style="margin-bottom: 24px;">
+      <h2>جلسة اختبار نماذج القدرات</h2>
+      <p style="color: var(--text-muted);">أجب عن كافة الأسئلة ثم اضغط "تسليم" في نهاية الصفحة لمعرفة نتيجتك ومراجعة الإجابات.</p>
+    </div>
+    <form id="quiz-form" onsubmit="submitQuiz(event)">
+      <div id="quiz-questions-list"></div>
+      <div style="margin-top: 24px; display: flex; gap: 12px;">
+        <button type="submit" id="btn-submit-quiz" class="primary" style="padding: 12px 24px; font-size: 1rem;">تسليم الاختبار</button>
+        <button type="button" onclick="switchView('manage')">خروج</button>
+      </div>
+    </form>
+  `;
+
+  const qList = document.getElementById('quiz-questions-list');
+  activeQuizQuestions.forEach((q, idx) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'quiz-question';
+    qDiv.id = `quiz-node-${q.id}`;
+    qDiv.innerHTML = `
+      <div style="font-weight: 600; font-size: 1rem; margin-bottom: 8px;">سؤال ${idx + 1}: ${q.text}</div>
+      <div id="quiz-media-${q.id}"></div>
+      <div class="quiz-options">
+        ${q.options.map((opt, i) => `
+          <label class="quiz-choice" id="label-${q.id}-${i}">
+            <input type="radio" name="ans-${q.id}" value="${i}" ${quizSubmitted ? 'disabled' : ''}>
+            <span>${opt}</span>
+          </label>
+        `).join('')}
+      </div>
+      <div id="quiz-result-${q.id}"></div>
+    `;
+    qList.appendChild(qDiv);
+    if (q.fileId) renderMedia(q.fileId, qDiv.querySelector(`#quiz-media-${q.id}`));
+  });
+}
+
+function submitQuiz(e) {
+  e.preventDefault();
+  quizSubmitted = true;
+  let score = 0;
+
+  activeQuizQuestions.forEach(q => {
+    const selected = document.querySelector(`input[name="ans-${q.id}"]:checked`);
+    const userVal = selected ? parseInt(selected.value, 10) : null;
+    const isCorrect = userVal === q.correct;
+    if (isCorrect) score++;
+
+    const resDiv = document.getElementById(`quiz-result-${q.id}`);
+    resDiv.className = `review-box ${isCorrect ? 'option-item correct' : 'option-item wrong'}`;
+    resDiv.style.marginTop = '12px';
+
+    if (isCorrect) {
+      resDiv.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span>إجابة صحيحة!</span>
+          <button type="button" class="success" onclick="markCompleted('${q.id}'); this.disabled=true; this.innerText='تم النقل لمكتملة المراجعة';">انتهت المراجعة</button>
+        </div>
+      `;
+    } else {
+      resDiv.innerHTML = `
+        <div>إجابة خاطئة. الإجابة الصحيحة هي: <strong>${q.options[q.correct]}</strong></div>
+      `;
+    }
+
+    // Color-code choices
+    q.options.forEach((_, i) => {
+      const label = document.getElementById(`label-${q.id}-${i}`);
+      if (i === q.correct) label.style.borderColor = 'var(--success)';
+      if (userVal === i && !isCorrect) label.style.borderColor = 'var(--danger)';
+    });
+  });
+
+  document.getElementById('btn-submit-quiz').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
