@@ -1,379 +1,1111 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>بنك أخطاء القدرات</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>منصة تدريب بنك أسئلة ومعاني القدرات</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --panel: #1e293b;
-      --panel-border: #334155;
+      --bg: #0b1120;
+      --card-bg: #151f32;
+      --border: #24324d;
       --primary: #38bdf8;
       --primary-hover: #0284c7;
-      --success: #22c55e;
+      --accent: #f59e0b;
+      --success: #10b981;
       --danger: #ef4444;
-      --text: #f8fafc;
+      --text: #f1f5f9;
       --text-muted: #94a3b8;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 24px 16px; line-height: 1.5; }
-    .container { max-width: 1000px; margin: 0 auto; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg); color: var(--text); padding: 12px; font-size: 15px; }
+    .container { max-width: 850px; margin: 0 auto; }
 
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; border-bottom: 1px solid var(--panel-border); padding-bottom: 16px; }
-    h1 { font-size: 1.5rem; color: var(--primary); }
-    .nav-tabs { display: flex; gap: 8px; }
-    button { background: var(--panel); color: var(--text); border: 1px solid var(--panel-border); padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
-    button:hover { border-color: var(--primary); }
-    button.primary { background: var(--primary); color: #000; font-weight: 600; border: none; }
-    button.primary:hover { background: var(--primary-hover); color: #fff; }
+    /* Header & Navigation Tabs */
+    header { margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    h1 { font-size: 1.25rem; color: var(--primary); font-weight: 700; }
+    .nav-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .nav-tabs button { font-size: 0.85rem; padding: 10px 4px; text-align: center; white-space: nowrap; }
+
+    button { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    button:active { transform: scale(0.98); }
+    button.primary { background: var(--primary); color: #021226; font-weight: 600; border: none; }
     button.success { background: var(--success); color: #fff; border: none; }
     button.danger { background: var(--danger); color: #fff; border: none; }
-    button.active { border-color: var(--primary); background: #1e3a8a; }
+    button.accent { background: var(--accent); color: #021226; font-weight: 600; border: none; }
+    button.active { border-color: var(--primary); background: #1e3a8a; color: #fff; }
+    button.icon-btn { padding: 6px 10px; font-size: 1rem; border-radius: 6px; }
 
-    .card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-    label { font-size: 0.85rem; color: var(--text-muted); }
-    input, select, textarea { background: #0f172a; border: 1px solid var(--panel-border); color: #fff; padding: 10px; border-radius: 6px; font-size: 0.95rem; }
-    input:focus, select:focus, textarea:focus { outline: 1px solid var(--primary); border-color: var(--primary); }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    label { font-size: 0.8rem; color: var(--text-muted); }
+    input, select, textarea { background: #0b1120; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; font-size: 0.95rem; width: 100%; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
 
-    .media-preview { margin-top: 10px; max-width: 100%; max-height: 320px; border-radius: 8px; object-fit: contain; }
-    .pdf-link { display: inline-block; margin-top: 8px; color: var(--primary); text-decoration: underline; cursor: pointer; }
+    /* Segmented Controls (Toggle Buttons) */
+    .toggle-group { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .toggle-group button { flex: 1; border-radius: 0; border: none; background: #0b1120; color: var(--text-muted); padding: 10px; }
+    .toggle-group button.selected { background: var(--primary); color: #021226; font-weight: 700; }
 
-    .group-header { display: flex; justify-content: space-between; align-items: center; background: #1e3a5f; padding: 12px 16px; border-radius: 8px; margin-top: 24px; margin-bottom: 12px; }
-    .section-header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; border-right: 4px solid var(--primary); padding: 8px 12px; margin-bottom: 12px; border-radius: 4px; }
-    .question-card { background: #131d31; border: 1px solid var(--panel-border); border-radius: 8px; padding: 16px; margin-bottom: 12px; }
-    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0; }
-    .option-item { background: #0f172a; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--panel-border); font-size: 0.9rem; }
-    .option-item.correct { border-color: var(--success); color: var(--success); }
-    .option-item.wrong { border-color: var(--danger); color: var(--danger); }
+    /* Tree Lists */
+    .group-box { background: #131d32; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
+    .group-head { background: #1a2744; padding: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
+    .section-box { border-right: 3px solid var(--primary); background: #151f32; margin: 10px 10px 10px 0; border-radius: 6px; padding: 10px; }
+    .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
 
-    /* Quiz Mode Styles */
-    .quiz-question { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-    .quiz-options { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
-    .quiz-choice { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #0f172a; border: 1px solid var(--panel-border); border-radius: 6px; cursor: pointer; }
-    .quiz-choice input { accent-color: var(--primary); }
-    .review-box { margin-top: 16px; padding: 12px; border-radius: 6px; font-size: 0.9rem; }
+    /* Item Cards */
+    .item-card { background: #0e1626; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
+    .item-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+    .star-btn { background: none; border: none; color: #475569; font-size: 1.3rem; padding: 2px 6px; }
+    .star-btn.starred { color: var(--accent); }
+    .badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; display: inline-block; }
+    .badge-quant { background: #3b82f6; color: #fff; }
+    .badge-verbal { background: #8b5cf6; color: #fff; }
+
+    .options-grid { display: grid; grid-template-columns: 1fr; gap: 6px; margin: 10px 0; }
+    @media(min-width: 600px) { .options-grid { grid-template-columns: 1fr 1fr; } }
+    .option-cell { background: #080d1a; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.85rem; }
+    .option-cell.correct { border-color: var(--success); color: var(--success); font-weight: bold; }
+
+    .media-preview { width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; margin-top: 8px; }
+
+    /* Modals & Dialogs */
+    dialog { margin: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); padding: 18px; width: 92%; max-width: 500px; max-height: 88vh; overflow-y: auto; }
+    dialog::backdrop { background: rgba(0,0,0,0.75); }
+
+    /* Flashcard Style */
+    .flashcard { min-height: 220px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; background: #131d32; border: 2px dashed var(--border); border-radius: 14px; cursor: pointer; margin-bottom: 16px; }
+    .flashcard .word { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
+    .flashcard .meaning { font-size: 1.3rem; color: var(--success); margin-top: 14px; }
+
+    /* Matching Game */
+    .match-board { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+    .match-col { display: flex; flex-direction: column; gap: 8px; }
+    .match-btn { width: 100%; min-height: 50px; text-align: center; border: 1px solid var(--border); background: #0f172a; padding: 8px; font-size: 0.85rem; border-radius: 8px; justify-content: center; }
+    .match-btn.selected { border-color: var(--primary); background: #1e3a8a; }
+    .match-btn.matched { border-color: var(--success); background: #064e3b; opacity: 0.6; pointer-events: none; }
   </style>
 </head>
 <body>
 <div class="container">
   <header>
-    <h1>منصة مراجعة أخطاء القدرات</h1>
+    <div class="top-bar">
+      <h1>أكاديمية القدرات</h1>
+      <button class="accent" onclick="openStarredPanel()">★ الأسئلة المميزة (<span id="starred-count">0</span>)</button>
+    </div>
     <div class="nav-tabs">
-      <button id="tab-manage" class="active" onclick="switchView('manage')">إدارة الأسئلة</button>
-      <button id="tab-completed" onclick="switchView('completed')">مكتملة المراجعة</button>
-      <button id="tab-quiz" style="display:none;" onclick="switchView('quiz')">جلسة الاختبار</button>
+      <button id="tab-questions" class="active" onclick="switchPage('questions')">بنك الأسئلة</button>
+      <button id="tab-words" onclick="switchPage('words')">معاني الكلمات</button>
+      <button id="tab-completed" onclick="switchPage('completed')">مكتملة المراجعة</button>
     </div>
   </header>
 
-  <!-- VIEW: Manage Questions & Groups -->
-  <div id="view-manage">
-    <!-- Top Global Actions -->
-    <div class="card" style="display: flex; justify-content: space-between; align-items: center;">
-      <div>
-        <button class="primary" onclick="startQuiz('all')">اختبار كافة الأسئلة النشطة</button>
-        <button onclick="toggleModal('modal-group')">+ مجموعة جديدة</button>
-        <button onclick="toggleModal('modal-section')">+ قسم جديد</button>
-        <button onclick="toggleModal('modal-question')">+ سؤال يدوي</button>
+  <!-- PAGE 1: Questions Bank -->
+  <div id="page-questions">
+    <div class="card" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between; align-items:center;">
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button class="primary" onclick="startQuiz('all')">اختبار كافة الأسئلة</button>
+        <button onclick="openModal('modal-group')">+ مجموعة</button>
+        <button onclick="openModal('modal-section')">+ قسم</button>
+        <button onclick="openModal('modal-question')">+ سؤال</button>
       </div>
       <div>
-        <input type="file" id="json-input" accept=".json" style="display: none;" onchange="importJSON(event)">
-        <button onclick="document.getElementById('json-input').click()">استيراد JSON Parser</button>
+        <input type="file" id="json-input" accept=".json" style="display:none;" onchange="importJSON(event)">
+        <button onclick="document.getElementById('json-input').click()">استيراد JSON</button>
       </div>
     </div>
-
-    <!-- Active List Tree -->
-    <div id="active-tree"></div>
+    <div id="questions-tree"></div>
   </div>
 
-  <!-- VIEW: Completed Questions -->
-  <div id="view-completed" style="display: none;">
+  <!-- PAGE 2: Vocabulary Page -->
+  <div id="page-words" style="display:none;">
+    <div class="card" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between; align-items:center;">
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button onclick="openModal('modal-word-group')">+ مجموعة كلمات</button>
+        <button onclick="openModal('modal-word')">+ إضافة كلمة</button>
+      </div>
+    </div>
+    <div id="words-tree"></div>
+  </div>
+
+  <!-- PAGE 3: Completed Reviews -->
+  <div id="page-completed" style="display:none;">
     <div class="card">
-      <p style="color: var(--text-muted); margin-bottom: 16px;">الأسئلة التي تمت مراجعتها بنجاح ونقلها من قائمة الأخطاء النشطة:</p>
-      <div id="completed-list"></div>
+      <h3 style="margin-bottom:12px;">العناصر مكتملة المراجعة</h3>
+      <div id="completed-container"></div>
     </div>
   </div>
 
-  <!-- VIEW: Quiz (Google Forms Style) -->
-  <div id="view-quiz" style="display: none;">
-    <div id="quiz-container"></div>
+  <!-- VIEW: Quiz Session -->
+  <div id="page-quiz" style="display:none;">
+    <div id="quiz-mount"></div>
   </div>
 </div>
 
-<!-- MODAL: Add Group -->
-<dialog id="modal-group" class="card" style="margin: auto; width: 400px; color: var(--text);">
-  <h3>إضافة مجموعة رئيسية</h3>
-  <div class="form-group" style="margin-top: 12px;">
-    <label>اسم المجموعة (مثال: محوسب نموذج 120، تجميعات 2026)</label>
+<!-- ================= MODALS ================= -->
+
+<!-- Starred Questions Pop-up Panel -->
+<dialog id="modal-starred">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+    <h3>★ الأسئلة المميزة</h3>
+    <button onclick="document.getElementById('modal-starred').close()">إغلاق</button>
+  </div>
+  <button class="primary" style="width:100%; margin-bottom:14px;" onclick="startQuiz('starred')">اختبر على الأسئلة المميزة</button>
+  <div id="starred-items-list"></div>
+</dialog>
+
+<!-- Modal: Add Question Group -->
+<dialog id="modal-group">
+  <h3>مجموعة أسئلة جديدة</h3>
+  <div class="form-group" style="margin-top:10px;">
+    <label>اسم المجموعة (مثال: تجميعات النماذج، الورقي 2026)</label>
     <input type="text" id="group-name">
   </div>
-  <div style="display: flex; gap: 8px; justify-content: flex-end;">
-    <button onclick="toggleModal('modal-group')">إلغاء</button>
+  <div style="display:flex; justify-content:flex-end; gap:8px;">
+    <button onclick="closeModal('modal-group')">إلغاء</button>
     <button class="primary" onclick="saveGroup()">حفظ</button>
   </div>
 </dialog>
 
-<!-- MODAL: Add Section -->
-<dialog id="modal-section" class="card" style="margin: auto; width: 400px; color: var(--text);">
-  <h3>إضافة قسم لمجموعة</h3>
-  <div class="form-group" style="margin-top: 12px;">
-    <label>اختر المجموعة</label>
+<!-- Modal: Add Section -->
+<dialog id="modal-section">
+  <h3>قسم جديد</h3>
+  <div class="form-group" style="margin-top:10px;">
+    <label>المجموعة الرئيسية</label>
     <select id="section-group-select"></select>
   </div>
   <div class="form-group">
-    <label>اسم القسم (مثال: الهندسة، استيعاب المقروء، التناظر)</label>
-    <input type="text" id="section-name">
+    <label>رقم القسم</label>
+    <input type="number" id="section-num" placeholder="1">
   </div>
-  <div style="display: flex; gap: 8px; justify-content: flex-end;">
-    <button onclick="toggleModal('modal-section')">إلغاء</button>
+  <div class="form-group">
+    <label>عنوان القسم</label>
+    <input type="text" id="section-title" placeholder="الهندسة والمثلثات">
+  </div>
+  <div style="display:flex; justify-content:flex-end; gap:8px;">
+    <button onclick="closeModal('modal-section')">إلغاء</button>
     <button class="primary" onclick="saveSection()">حفظ</button>
   </div>
 </dialog>
 
-<!-- MODAL: Add Manual Question -->
-<dialog id="modal-question" class="card" style="margin: auto; width: 600px; max-height: 90vh; overflow-y: auto; color: var(--text);">
-  <h3>إضافة سؤال يدوي</h3>
-  <div class="grid-2" style="margin-top: 12px;">
-    <div class="form-group">
-      <label>المجموعة</label>
-      <select id="q-group-select" onchange="populateModalSections()"></select>
+<!-- Modal: Add Question -->
+<dialog id="modal-question">
+  <h3>إضافة سؤال جديد</h3>
+  <div class="form-group" style="margin-top:10px;">
+    <label>تصنيف السؤال</label>
+    <div class="toggle-group">
+      <button type="button" id="btn-type-quant" class="selected" onclick="selectQuestionType('كمي')">كمي</button>
+      <button type="button" id="btn-type-verbal" onclick="selectQuestionType('لفظي')">لفظي</button>
     </div>
-    <div class="form-group">
-      <label>القسم</label>
-      <select id="q-section-select"></select>
-    </div>
+  </div>
+  <div class="form-group">
+    <label>المجموعة</label>
+    <select id="q-group-select" onchange="syncSectionDropdown()"></select>
+  </div>
+  <div class="form-group">
+    <label>القسم</label>
+    <select id="q-section-select"></select>
   </div>
   <div class="form-group">
     <label>نص السؤال</label>
     <textarea id="q-text" rows="3"></textarea>
   </div>
-  <div class="grid-2">
-    <div class="form-group"><label>الخيار أ</label><input type="text" id="opt-0"></div>
-    <div class="form-group"><label>الخيار ب</label><input type="text" id="opt-1"></div>
-    <div class="form-group"><label>الخيار ج</label><input type="text" id="opt-2"></div>
-    <div class="form-group"><label>الخيار د</label><input type="text" id="opt-3"></div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+    <div class="form-group"><label>خيار أ</label><input type="text" id="opt-0"></div>
+    <div class="form-group"><label>خيار ب</label><input type="text" id="opt-1"></div>
+    <div class="form-group"><label>خيار ج</label><input type="text" id="opt-2"></div>
+    <div class="form-group"><label>خيار د</label><input type="text" id="opt-3"></div>
   </div>
   <div class="form-group">
-    <label>الإجابة الصحيحة</label>
+    <label>الخيار الصحيح</label>
     <select id="q-correct">
-      <option value="0">الخيار أ</option>
-      <option value="1">الخيار ب</option>
-      <option value="2">الخيار ج</option>
-      <option value="3">الخيار د</option>
+      <option value="0">خيار أ</option>
+      <option value="1">خيار ب</option>
+      <option value="2">خيار ج</option>
+      <option value="3">خيار د</option>
     </select>
   </div>
   <div class="form-group">
-    <label>إرفاق صورة (بحد أقصى 4MB) أو مستند PDF (بحد أقصى 20MB)</label>
+    <label>مرفق (صورة $\le$ 4MB أو PDF $\le$ 20MB)</label>
     <input type="file" id="q-file" accept="image/*,application/pdf">
   </div>
-  <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px;">
-    <button onclick="toggleModal('modal-question')">إلغاء</button>
-    <button class="primary" onclick="saveManualQuestion()">حفظ السؤال</button>
+  <div style="display:flex; justify-content:flex-end; gap:8px;">
+    <button onclick="closeModal('modal-question')">إلغاء</button>
+    <button class="primary" onclick="saveQuestion()">حفظ السؤال</button>
+  </div>
+</dialog>
+
+<!-- Modal: Add Word Group -->
+<dialog id="modal-word-group">
+  <h3>مجموعة مفردات جديدة</h3>
+  <div class="form-group" style="margin-top:10px;">
+    <label>اسم المجموعة (مثال: معاني النماذج الأكثر تكراراً)</label>
+    <input type="text" id="word-group-name">
+  </div>
+  <div style="display:flex; justify-content:flex-end; gap:8px;">
+    <button onclick="closeModal('modal-word-group')">إلغاء</button>
+    <button class="primary" onclick="saveWordGroup()">حفظ</button>
+  </div>
+</dialog>
+
+<!-- Modal: Add Word -->
+<dialog id="modal-word">
+  <h3>إضافة مفردة جديدة</h3>
+  <div class="form-group" style="margin-top:10px;">
+    <label>مجموعة الكلمات</label>
+    <select id="word-group-select"></select>
+  </div>
+  <div class="form-group">
+    <label>الكلمة</label>
+    <input type="text" id="word-text">
+  </div>
+  <div class="form-group">
+    <label>المعنى</label>
+    <textarea id="word-meaning" rows="2"></textarea>
+  </div>
+  <div style="display:flex; justify-content:flex-end; gap:8px;">
+    <button onclick="closeModal('modal-word')">إلغاء</button>
+    <button class="primary" onclick="saveWord()">حفظ الكلمة</button>
+  </div>
+</dialog>
+
+<!-- Modal: Vocab Quiz Setup -->
+<dialog id="modal-vocab-quiz-setup">
+  <h3>إعداد اختبار المفردات</h3>
+  <input type="hidden" id="vocab-quiz-group-id">
+  <div class="form-group" style="margin-top:10px;">
+    <label>نطاق الكلمات</label>
+    <select id="vocab-scope">
+      <option value="unreviewed">الكلمات غير المراجعة فقط</option>
+      <option value="starred">الكلمات المميزة بنجمة فقط</option>
+      <option value="all">كافة الكلمات</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>أسلوب الاختبار</label>
+    <select id="vocab-mode">
+      <option value="flashcards">بطاقات استذكار (Flashcards)</option>
+      <option value="mcq">اختيار من متعدد (MCQ)</option>
+      <option value="match">مطابقة الكلمة بمعناها</option>
+    </select>
+  </div>
+  <div style="display:flex; justify-content:flex-end; gap:8px;">
+    <button onclick="closeModal('modal-vocab-quiz-setup')">إلغاء</button>
+    <button class="primary" onclick="initiateVocabQuiz()">بدء الاختبار</button>
   </div>
 </dialog>
 
 <script>
 /**
  * IndexedDB Layer
- * Handles Large Assets (Images up to 4MB, PDF up to 20MB)
  */
 let db;
-const DB_NAME = 'QuduratErrorsDB';
-const DB_VERSION = 1;
+const DB_NAME = 'QuduratVault';
+const DB_VER = 2;
 
 function initDB() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-    request.onupgradeneeded = (e) => {
-      const dbInstance = e.target.result;
-      if (!dbInstance.objectStoreNames.contains('groups')) dbInstance.createObjectStore('groups', { keyPath: 'id' });
-      if (!dbInstance.objectStoreNames.contains('sections')) dbInstance.createObjectStore('sections', { keyPath: 'id' });
-      if (!dbInstance.objectStoreNames.contains('questions')) dbInstance.createObjectStore('questions', { keyPath: 'id' });
-      if (!dbInstance.objectStoreNames.contains('files')) dbInstance.createObjectStore('files', { keyPath: 'id' });
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('groups')) d.createObjectStore('groups', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('sections')) d.createObjectStore('sections', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('questions')) d.createObjectStore('questions', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('wordGroups')) d.createObjectStore('wordGroups', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('words')) d.createObjectStore('words', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('files')) d.createObjectStore('files', { keyPath: 'id' });
     };
-    request.onsuccess = (e) => { db = e.target.result; resolve(); };
-    request.onerror = (e) => reject(e.target.error);
-  });
-}
-
-function dbTx(storeName, mode, callback) {
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, mode);
-    const store = tx.objectStore(storeName);
-    const req = callback(store);
-    tx.oncomplete = () => resolve(req ? req.result : undefined);
-    tx.onerror = () => reject(tx.error);
+    req.onsuccess = () => { db = req.result; resolve(); };
+    req.onerror = () => reject(req.error);
   });
 }
 
 const dbOps = {
-  getAll: (store) => dbTx(store, 'readonly', (s) => s.getAll()),
-  put: (store, data) => dbTx(store, 'readwrite', (s) => s.put(data)),
-  get: (store, id) => dbTx(store, 'readonly', (s) => s.get(id)),
-  delete: (store, id) => dbTx(store, 'readwrite', (s) => s.delete(id))
+  getAll: (store) => new Promise((resolve) => {
+    const tx = db.transaction(store, 'readonly');
+    const r = tx.objectStore(store).getAll();
+    r.onsuccess = () => resolve(r.result || []);
+  }),
+  put: (store, data) => new Promise((resolve) => {
+    const tx = db.transaction(store, 'readwrite');
+    tx.objectStore(store).put(data);
+    tx.oncomplete = () => resolve();
+  }),
+  get: (store, id) => new Promise((resolve) => {
+    const tx = db.transaction(store, 'readonly');
+    const r = tx.objectStore(store).get(id);
+    r.onsuccess = () => resolve(r.result);
+  }),
+  delete: (store, id) => new Promise((resolve) => {
+    const tx = db.transaction(store, 'readwrite');
+    tx.objectStore(store).delete(id);
+    tx.oncomplete = () => resolve();
+  })
 };
 
-// Application State
-let activeQuizQuestions = [];
-let quizSubmitted = false;
+let currentQuestionType = 'كمي';
 
 window.addEventListener('DOMContentLoaded', async () => {
   await initDB();
-  renderApp();
+  refreshUI();
 });
 
-function toggleModal(id) {
-  const modal = document.getElementById(id);
-  if (modal.open) {
-    modal.close();
-  } else {
-    if (id === 'modal-section' || id === 'modal-question') syncDropdowns();
-    modal.showModal();
-  }
+function openModal(id) {
+  if (id === 'modal-section' || id === 'modal-question') syncGroupDropdowns();
+  if (id === 'modal-word') syncWordGroupDropdown();
+  document.getElementById(id).showModal();
+}
+function closeModal(id) { document.getElementById(id).close(); }
+
+function switchPage(page) {
+  document.getElementById('page-questions').style.display = page === 'questions' ? 'block' : 'none';
+  document.getElementById('page-words').style.display = page === 'words' ? 'block' : 'none';
+  document.getElementById('page-completed').style.display = page === 'completed' ? 'block' : 'none';
+  document.getElementById('page-quiz').style.display = page === 'quiz' ? 'block' : 'none';
+
+  document.getElementById('tab-questions').classList.toggle('active', page === 'questions');
+  document.getElementById('tab-words').classList.toggle('active', page === 'words');
+  document.getElementById('tab-completed').classList.toggle('active', page === 'completed');
+
+  if (page !== 'quiz') refreshUI();
 }
 
-function switchView(view) {
-  document.getElementById('view-manage').style.display = view === 'manage' ? 'block' : 'none';
-  document.getElementById('view-completed').style.display = view === 'completed' ? 'block' : 'none';
-  document.getElementById('view-quiz').style.display = view === 'quiz' ? 'block' : 'none';
-
-  document.getElementById('tab-manage').classList.toggle('active', view === 'manage');
-  document.getElementById('tab-completed').classList.toggle('active', view === 'completed');
-  document.getElementById('tab-quiz').classList.toggle('active', view === 'quiz');
-
-  if (view === 'manage' || view === 'completed') renderApp();
+function selectQuestionType(type) {
+  currentQuestionType = type;
+  document.getElementById('btn-type-quant').classList.toggle('selected', type === 'كمي');
+  document.getElementById('btn-type-verbal').classList.toggle('selected', type === 'لفظي');
 }
 
-async function syncDropdowns() {
+async function syncGroupDropdowns() {
   const groups = await dbOps.getAll('groups');
-  const sections = await dbOps.getAll('sections');
-
-  const populate = (elemId, items) => {
-    const el = document.getElementById(elemId);
-    el.innerHTML = items.map(i => `<option value="${i.id}">${i.name}</option>`).join('');
+  const fill = (elId) => {
+    const el = document.getElementById(elId);
+    el.innerHTML = groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
   };
-
-  populate('section-group-select', groups);
-  populate('q-group-select', groups);
-  populateModalSections();
+  fill('section-group-select');
+  fill('q-group-select');
+  syncSectionDropdown();
 }
 
-async function populateModalSections() {
+async function syncSectionDropdown() {
   const groupId = document.getElementById('q-group-select').value;
   const sections = await dbOps.getAll('sections');
   const filtered = sections.filter(s => s.groupId === groupId);
   const el = document.getElementById('q-section-select');
-  el.innerHTML = filtered.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  el.innerHTML = filtered.map(s => `<option value="${s.id}">قسم ${s.num}: ${s.title}</option>`).join('');
 }
+
+async function syncWordGroupDropdown() {
+  const groups = await dbOps.getAll('wordGroups');
+  const el = document.getElementById('word-group-select');
+  el.innerHTML = groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+}
+
+/* ================= CRUD Operations ================= */
 
 async function saveGroup() {
   const name = document.getElementById('group-name').value.trim();
-  if (!name) return alert('الرجاء إدخال اسم المجموعة');
-  const id = 'g_' + Date.now();
-  await dbOps.put('groups', { id, name });
+  if (!name) return alert('أدخل اسم المجموعة');
+  await dbOps.put('groups', { id: 'g_' + Date.now(), name });
   document.getElementById('group-name').value = '';
-  toggleModal('modal-group');
-  renderApp();
+  closeModal('modal-group');
+  refreshUI();
 }
 
 async function saveSection() {
-  const name = document.getElementById('section-name').value.trim();
   const groupId = document.getElementById('section-group-select').value;
-  if (!name || !groupId) return alert('تأكد من اختيار المجموعة وإدخال اسم القسم');
-  const id = 's_' + Date.now();
-  await dbOps.put('sections', { id, name, groupId });
-  document.getElementById('section-name').value = '';
-  toggleModal('modal-section');
-  renderApp();
+  const num = document.getElementById('section-num').value.trim();
+  const title = document.getElementById('section-title').value.trim();
+  if (!groupId || !num || !title) return alert('الرجاء تعبئة كافة الحقول الخاصة بالقسم');
+
+  await dbOps.put('sections', { id: 's_' + Date.now(), groupId, num, title });
+  document.getElementById('section-num').value = '';
+  document.getElementById('section-title').value = '';
+  closeModal('modal-section');
+  refreshUI();
 }
 
-async function processFileInput(file) {
-  if (!file) return null;
-  const isImage = file.type.startsWith('image/');
-  const isPDF = file.type === 'application/pdf';
+async function saveQuestion() {
+  const groupId = document.getElementById('q-group-select').value;
+  const sectionId = document.getElementById('q-section-select').value;
+  const text = document.getElementById('q-text').value.trim();
+  const opts = [
+    document.getElementById('opt-0').value.trim(),
+    document.getElementById('opt-1').value.trim(),
+    document.getElementById('opt-2').value.trim(),
+    document.getElementById('opt-3').value.trim()
+  ];
+  const correct = parseInt(document.getElementById('q-correct').value, 10);
+  const file = document.getElementById('q-file').files[0];
 
-  if (isImage && file.size > 4 * 1024 * 1024) throw new Error('حجم الصورة يتجاوز الحد الأقصى (4MB)');
-  if (isPDF && file.size > 20 * 1024 * 1024) throw new Error('حجم ملف الـ PDF يتجاوز الحد الأقصى (20MB)');
-  if (!isImage && !isPDF) throw new Error('نوع الملف غير مدعوم. يدعم فقط الصور وملفات PDF');
+  if (!groupId || !sectionId) return alert('يجب تحديد المجموعة والقسم أولاً');
+  if (!text || opts.some(o => !o)) return alert('أكمل نص السؤال والخيارات الأربعة');
 
-  const fileId = 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
-  await dbOps.put('files', { id: fileId, data: file, type: file.type, name: file.name });
-  return fileId;
+  let fileId = null;
+  if (file) {
+    if (file.type.startsWith('image/') && file.size > 4 * 1024 * 1024) return alert('الحد الأقصى للصور 4MB');
+    if (file.type === 'application/pdf' && file.size > 20 * 1024 * 1024) return alert('الحد الأقصى لملف PDF هو 20MB');
+    fileId = 'f_' + Date.now();
+    await dbOps.put('files', { id: fileId, data: file, type: file.type, name: file.name });
+  }
+
+  await dbOps.put('questions', {
+    id: 'q_' + Date.now(),
+    groupId,
+    sectionId,
+    type: currentQuestionType,
+    text,
+    options: opts,
+    correct,
+    fileId,
+    completed: false,
+    starred: false
+  });
+
+  document.getElementById('q-text').value = '';
+  opts.forEach((_, i) => document.getElementById(`opt-${i}`).value = '');
+  document.getElementById('q-file').value = '';
+  closeModal('modal-question');
+  refreshUI();
 }
 
-async function saveManualQuestion() {
-  try {
-    const groupId = document.getElementById('q-group-select').value;
-    const sectionId = document.getElementById('q-section-select').value;
-    const text = document.getElementById('q-text').value.trim();
-    const options = [
-      document.getElementById('opt-0').value.trim(),
-      document.getElementById('opt-1').value.trim(),
-      document.getElementById('opt-2').value.trim(),
-      document.getElementById('opt-3').value.trim()
-    ];
-    const correct = parseInt(document.getElementById('q-correct').value, 10);
-    const file = document.getElementById('q-file').files[0];
+async function saveWordGroup() {
+  const name = document.getElementById('word-group-name').value.trim();
+  if (!name) return alert('أدخل اسم مجموعة المفردات');
+  await dbOps.put('wordGroups', { id: 'wg_' + Date.now(), name });
+  document.getElementById('word-group-name').value = '';
+  closeModal('modal-word-group');
+  refreshUI();
+}
 
-    if (!groupId || !sectionId || !text || options.some(o => !o)) {
-      return alert('الرجاء إكمال كافة حقول السؤال والخيارات');
-    }
+async function saveWord() {
+  const groupId = document.getElementById('word-group-select').value;
+  const word = document.getElementById('word-text').value.trim();
+  const meaning = document.getElementById('word-meaning').value.trim();
+  if (!groupId || !word || !meaning) return alert('أكمل حقول الكلمة والمجموعة والمعنى');
 
-    const fileId = await processFileInput(file);
+  await dbOps.put('words', {
+    id: 'w_' + Date.now(),
+    groupId,
+    word,
+    meaning,
+    completed: false,
+    starred: false
+  });
 
-    const question = {
-      id: 'q_' + Date.now(),
-      groupId,
-      sectionId,
-      text,
-      options,
-      correct,
-      fileId,
-      completed: false
-    };
+  document.getElementById('word-text').value = '';
+  document.getElementById('word-meaning').value = '';
+  closeModal('modal-word');
+  refreshUI();
+}
 
-    await dbOps.put('questions', question);
-    toggleModal('modal-question');
-    document.getElementById('q-text').value = '';
-    options.forEach((_, i) => document.getElementById(`opt-${i}`).value = '');
-    document.getElementById('q-file').value = '';
-    renderApp();
-  } catch (err) {
-    alert(err.message);
+/* ================= Cascading Deletion ================= */
+
+async function deleteGroup(groupId) {
+  if (!confirm('حذف هذه المجموعة سيحذف كافة أقسامها وأسئلتها نهائياً. هل أنت متأكد؟')) return;
+  const sections = await dbOps.getAll('sections');
+  const questions = await dbOps.getAll('questions');
+
+  const secToDelete = sections.filter(s => s.groupId === groupId);
+  for (const s of secToDelete) await dbOps.delete('sections', s.id);
+
+  const qToDelete = questions.filter(q => q.groupId === groupId);
+  for (const q of qToDelete) {
+    if (q.fileId) await dbOps.delete('files', q.fileId);
+    await dbOps.delete('questions', q.id);
+  }
+  await dbOps.delete('groups', groupId);
+  refreshUI();
+}
+
+async function deleteSection(sectionId) {
+  if (!confirm('حذف هذا القسم سيحذف كافة الأسئلة التابعة له. هل أنت متأكد؟')) return;
+  const questions = await dbOps.getAll('questions');
+  const qToDelete = questions.filter(q => q.sectionId === sectionId);
+  for (const q of qToDelete) {
+    if (q.fileId) await dbOps.delete('files', q.fileId);
+    await dbOps.delete('questions', q.id);
+  }
+  await dbOps.delete('sections', sectionId);
+  refreshUI();
+}
+
+async function deleteQuestion(id) {
+  if (!confirm('حذف هذا السؤال؟')) return;
+  const q = await dbOps.get('questions', id);
+  if (q && q.fileId) await dbOps.delete('files', q.fileId);
+  await dbOps.delete('questions', id);
+  refreshUI();
+}
+
+async function deleteWordGroup(groupId) {
+  if (!confirm('حذف هذه المجموعة سيحذف كافة كلماتها. هل أنت متأكد؟')) return;
+  const words = await dbOps.getAll('words');
+  for (const w of words.filter(w => w.groupId === groupId)) await dbOps.delete('words', w.id);
+  await dbOps.delete('wordGroups', groupId);
+  refreshUI();
+}
+
+async function deleteWord(id) {
+  if (!confirm('حذف هذه الكلمة؟')) return;
+  await dbOps.delete('words', id);
+  refreshUI();
+}
+
+/* ================= Star & Review Toggles ================= */
+
+async function toggleStar(store, id) {
+  const item = await dbOps.get(store, id);
+  if (!item) return;
+  item.starred = !item.starred;
+  await dbOps.put(store, item);
+  refreshUI();
+}
+
+async function toggleComplete(store, id, status) {
+  const item = await dbOps.get(store, id);
+  if (!item) return;
+  item.completed = status;
+  await dbOps.put(store, item);
+  refreshUI();
+}
+
+/* ================= Rendering Main Interface ================= */
+
+async function refreshUI() {
+  const [groups, sections, questions, wordGroups, words] = await Promise.all([
+    dbOps.getAll('groups'),
+    dbOps.getAll('sections'),
+    dbOps.getAll('questions'),
+    dbOps.getAll('wordGroups'),
+    dbOps.getAll('words')
+  ]);
+
+  // Update Starred Count
+  const starredQuestions = questions.filter(q => q.starred);
+  document.getElementById('starred-count').innerText = starredQuestions.length;
+
+  // 1. Render Question Tree
+  const qTree = document.getElementById('questions-tree');
+  qTree.innerHTML = '';
+  groups.forEach(g => {
+    const gSections = sections.filter(s => s.groupId === g.id);
+    const gQuestions = questions.filter(q => q.groupId === g.id && !q.completed);
+
+    const gBox = document.createElement('div');
+    gBox.className = 'group-box';
+    gBox.innerHTML = `
+      <div class="group-head">
+        <div>
+          <strong>${g.name}</strong>
+          <span style="color:var(--text-muted); font-size:0.8rem; margin-right:6px;">(${gQuestions.length} سؤال نشط)</span>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="primary" onclick="startQuiz('group', '${g.id}')">اختبار المجموعة</button>
+          <button class="danger icon-btn" onclick="deleteGroup('${g.id}')">🗑</button>
+        </div>
+      </div>
+      <div class="group-body" id="group-sec-${g.id}"></div>
+    `;
+
+    const secContainer = gBox.querySelector(`#group-sec-${g.id}`);
+    gSections.forEach(s => {
+      const sQuestions = questions.filter(q => q.sectionId === s.id && !q.completed);
+      const sDiv = document.createElement('div');
+      sDiv.className = 'section-box';
+      sDiv.innerHTML = `
+        <div class="section-head">
+          <div>
+            <strong>قسم ${s.num}: ${s.title}</strong>
+            <span style="color:var(--text-muted); font-size:0.75rem; margin-right:6px;">(${sQuestions.length} سؤال)</span>
+          </div>
+          <div style="display:flex; gap:6px;">
+            <button onclick="startQuiz('section', '${s.id}')">اختبار القسم</button>
+            <button class="danger icon-btn" onclick="deleteSection('${s.id}')">🗑</button>
+          </div>
+        </div>
+        <div id="sec-q-${s.id}"></div>
+      `;
+
+      const qList = sDiv.querySelector(`#sec-q-${s.id}`);
+      sQuestions.forEach(q => qList.appendChild(buildQuestionCard(q)));
+      secContainer.appendChild(sDiv);
+    });
+
+    qTree.appendChild(gBox);
+  });
+
+  // 2. Render Words Tree
+  const wTree = document.getElementById('words-tree');
+  wTree.innerHTML = '';
+  wordGroups.forEach(wg => {
+    const gWords = words.filter(w => w.groupId === wg.id && !w.completed);
+    const box = document.createElement('div');
+    box.className = 'group-box';
+    box.innerHTML = `
+      <div class="group-head">
+        <div>
+          <strong>${wg.name}</strong>
+          <span style="color:var(--text-muted); font-size:0.8rem; margin-right:6px;">(${gWords.length} كلمة نشطة)</span>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button class="primary" onclick="openVocabQuizSetup('${wg.id}')">اختبر المعاني</button>
+          <button class="danger icon-btn" onclick="deleteWordGroup('${wg.id}')">🗑</button>
+        </div>
+      </div>
+      <div style="padding:10px;" id="w-list-${wg.id}"></div>
+    `;
+
+    const list = box.querySelector(`#w-list-${wg.id}`);
+    gWords.forEach(w => {
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      card.innerHTML = `
+        <div class="item-card-header">
+          <div>
+            <span style="font-weight:700; color:var(--primary); font-size:1.05rem;">${w.word}</span>: 
+            <span>${w.meaning}</span>
+          </div>
+          <div style="display:flex; gap:4px; align-items:center;">
+            <button class="star-btn ${w.starred ? 'starred' : ''}" onclick="toggleStar('words', '${w.id}')">★</button>
+            <button class="success" style="font-size:0.75rem;" onclick="toggleComplete('words', '${w.id}', true)">انتهت المراجعة</button>
+            <button class="danger icon-btn" style="font-size:0.8rem;" onclick="deleteWord('${w.id}')">🗑</button>
+          </div>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+
+    wTree.appendChild(box);
+  });
+
+  // 3. Render Completed Items
+  const compCont = document.getElementById('completed-container');
+  compCont.innerHTML = '';
+  const completedQ = questions.filter(q => q.completed);
+  const completedW = words.filter(w => w.completed);
+
+  if (completedQ.length === 0 && completedW.length === 0) {
+    compCont.innerHTML = '<p style="color:var(--text-muted);">لا توجد عناصر مكتملة حالياً.</p>';
+  } else {
+    completedQ.forEach(q => {
+      const el = buildQuestionCard(q, true);
+      compCont.appendChild(el);
+    });
+    completedW.forEach(w => {
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      card.innerHTML = `
+        <div class="item-card-header">
+          <div>
+            <span class="badge" style="background:#059669; color:#fff;">مفردة</span>
+            <strong>${w.word}</strong>: ${w.meaning}
+          </div>
+          <div>
+            <button onclick="toggleComplete('words', '${w.id}', false)">إعادة للتنشيط</button>
+            <button class="danger icon-btn" onclick="deleteWord('${w.id}')">🗑</button>
+          </div>
+        </div>
+      `;
+      compCont.appendChild(card);
+    });
   }
 }
 
-/**
- * JSON Parser
- * Supports payload array format:
- * [
- *   {
- *     "group": "تجميعات 2026",
- *     "section": "الجبر",
- *     "text": "سؤال...",
- *     "options": ["1", "2", "3", "4"],
- *     "correct": 0
- *   }
- * ]
- */
+function buildQuestionCard(q, isCompleted = false) {
+  const card = document.createElement('div');
+  card.className = 'item-card';
+  card.innerHTML = `
+    <div class="item-card-header">
+      <div>
+        <span class="badge ${q.type === 'كمي' ? 'badge-quant' : 'badge-verbal'}">${q.type || 'كمي'}</span>
+        <span style="font-weight:600; margin-right:6px;">${q.text}</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:4px;">
+        <button class="star-btn ${q.starred ? 'starred' : ''}" onclick="toggleStar('questions', '${q.id}')">★</button>
+        ${!isCompleted ? `<button class="success" style="font-size:0.75rem;" onclick="toggleComplete('questions', '${q.id}', true)">انتهت المراجعة</button>` : `<button onclick="toggleComplete('questions', '${q.id}', false)">إعادة</button>`}
+        <button class="danger icon-btn" style="font-size:0.8rem;" onclick="deleteQuestion('${q.id}')">🗑</button>
+      </div>
+    </div>
+    <div class="options-grid">
+      ${q.options.map((opt, i) => `
+        <div class="option-cell ${i === q.correct ? 'correct' : ''}">
+          ${String.fromCharCode(65 + i)}:${opt}
+        </div>
+      `).join('')}
+    </div>
+    <div id="media-${q.id}"></div>
+  `;
+  if (q.fileId) renderMedia(q.fileId, card.querySelector(`#media-${q.id}`));
+  return card;
+}
+
+async function renderMedia(fileId, container) {
+  const f = await dbOps.get('files', fileId);
+  if (!f) return;
+  const url = URL.createObjectURL(f.data);
+  if (f.type.startsWith('image/')) {
+    container.innerHTML = `<img src="${url}" class="media-preview" alt="سؤال">`;
+  } else {
+    container.innerHTML = `<a href="${url}" target="_blank" style="color:var(--primary); text-decoration:underline; font-size:0.85rem;">📄 عرض ملف المرفق (${f.name})</a>`;
+  }
+}
+
+/* ================= Starred Pop-up Panel ================= */
+
+async function openStarredPanel() {
+  const questions = await dbOps.getAll('questions');
+  const starred = questions.filter(q => q.starred);
+  const list = document.getElementById('starred-items-list');
+  list.innerHTML = '';
+  if (starred.length === 0) {
+    list.innerHTML = '<p style="color:var(--text-muted); text-align:center;">لا توجد أسئلة مميزة حتى الآن.</p>';
+  } else {
+    starred.forEach(q => list.appendChild(buildQuestionCard(q)));
+  }
+  document.getElementById('modal-starred').showModal();
+}
+
+/* ================= Forms-style Quiz Engine ================= */
+
+let activeQuizList = [];
+
+async function startQuiz(scope, targetId = null) {
+  const questions = await dbOps.getAll('questions');
+  let filtered = questions.filter(q => !q.completed);
+
+  if (scope === 'starred') {
+    filtered = questions.filter(q => q.starred);
+    document.getElementById('modal-starred').close();
+  } else if (scope === 'group') {
+    filtered = filtered.filter(q => q.groupId === targetId);
+  } else if (scope === 'section') {
+    filtered = filtered.filter(q => q.sectionId === targetId);
+  }
+
+  if (filtered.length === 0) return alert('لا توجد أسئلة متاحة في هذا النطاق');
+
+  activeQuizList = filtered;
+  switchPage('quiz');
+  renderQuizPage();
+}
+
+function renderQuizPage() {
+  const mount = document.getElementById('quiz-mount');
+  mount.innerHTML = `
+    <div class="card">
+      <h2>جلسة اختبار استمارة (Forms)</h2>
+      <p style="color:var(--text-muted); font-size:0.85rem;">أجب عن الأسئلة ثم اضغط "تسليم" بالأسفل لمعرفة النتيجة.</p>
+    </div>
+    <form id="quiz-form" onsubmit="submitQuiz(event)">
+      <div id="quiz-fields"></div>
+      <div style="margin-top:20px; display:flex; gap:10px;">
+        <button type="submit" id="quiz-submit-btn" class="primary" style="padding:10px 24px;">تسليم الاختبار</button>
+        <button type="button" onclick="switchPage('questions')">إنهاء وخروج</button>
+      </div>
+    </form>
+  `;
+
+  const fields = mount.querySelector('#quiz-fields');
+  activeQuizList.forEach((q, idx) => {
+    const qDiv = document.createElement('div');
+    qDiv.className = 'card';
+    qDiv.id = `q-node-${q.id}`;
+    qDiv.innerHTML = `
+      <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+        <strong>سؤال ${idx + 1} (${q.type || 'كمي'}): ${q.text}</strong>
+        <button type="button" class="star-btn ${q.starred ? 'starred' : ''}" onclick="toggleStar('questions', '${q.id}'); this.classList.toggle('starred');">★</button>
+      </div>
+      <div id="q-media-${q.id}"></div>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+        ${q.options.map((opt, i) => `
+          <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#0b1120; border:1px solid var(--border); border-radius:6px; cursor:pointer;" id="opt-lbl-${q.id}-${i}">
+            <input type="radio" name="ans-${q.id}" value="${i}">
+            <span>${opt}</span>
+          </label>
+        `).join('')}
+      </div>
+      <div id="q-feedback-${q.id}" style="margin-top:10px;"></div>
+    `;
+    fields.appendChild(qDiv);
+    if (q.fileId) renderMedia(q.fileId, qDiv.querySelector(`#q-media-${q.id}`));
+  });
+}
+
+function submitQuiz(e) {
+  e.preventDefault();
+  let score = 0;
+
+  activeQuizList.forEach(q => {
+    const checked = document.querySelector(`input[name="ans-${q.id}"]:checked`);
+    const val = checked ? parseInt(checked.value, 10) : null;
+    const isCorrect = val === q.correct;
+    if (isCorrect) score++;
+
+    const feedback = document.getElementById(`q-feedback-${q.id}`);
+    if (isCorrect) {
+      feedback.innerHTML = `
+        <div style="padding:10px; background:#064e3b; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="color:#6ee7b7; font-weight:bold;">إجابة صحيحة ✓</span>
+          <button type="button" class="success" onclick="toggleComplete('questions', '${q.id}', true); this.disabled=true; this.innerText='تم النقل لمكتملة المراجعة';">انتهت المراجعة</button>
+        </div>
+      `;
+    } else {
+      feedback.innerHTML = `
+        <div style="padding:10px; background:#450a0a; border-radius:6px; color:#fca5a5;">
+          إجابة خاطئة ✗ | الإجابة الصحيحة هي: <strong>${q.options[q.correct]}</strong>
+        </div>
+      `;
+    }
+
+    q.options.forEach((_, i) => {
+      const lbl = document.getElementById(`opt-lbl-${q.id}-${i}`);
+      if (i === q.correct) lbl.style.borderColor = 'var(--success)';
+      if (val === i && !isCorrect) lbl.style.borderColor = 'var(--danger)';
+    });
+  });
+
+  document.getElementById('quiz-submit-btn').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ================= Vocabulary Testing Modes ================= */
+
+function openVocabQuizSetup(groupId) {
+  document.getElementById('vocab-quiz-group-id').value = groupId;
+  openModal('modal-vocab-quiz-setup');
+}
+
+async function initiateVocabQuiz() {
+  const groupId = document.getElementById('vocab-quiz-group-id').value;
+  const scope = document.getElementById('vocab-scope').value;
+  const mode = document.getElementById('vocab-mode').value;
+  closeModal('modal-vocab-quiz-setup');
+
+  const words = await dbOps.getAll('words');
+  let selected = words.filter(w => w.groupId === groupId);
+
+  if (scope === 'unreviewed') selected = selected.filter(w => !w.completed);
+  if (scope === 'starred') selected = selected.filter(w => w.starred);
+
+  if (selected.length === 0) return alert('لا توجد مفردات متاحة ضمن الشروط المحددة');
+
+  switchPage('quiz');
+  if (mode === 'flashcards') runFlashcards(selected);
+  if (mode === 'mcq') runVocabMCQ(selected, words);
+  if (mode === 'match') runVocabMatching(selected);
+}
+
+// 1. Flashcards Mode
+function runFlashcards(items) {
+  let idx = 0;
+  const mount = document.getElementById('quiz-mount');
+
+  const renderCard = () => {
+    const item = items[idx];
+    mount.innerHTML = `
+      <div class="card" style="text-align:center;">
+        <h3>بطاقات استذكار المعاني (${idx + 1} من ${items.length})</h3>
+        <p style="color:var(--text-muted); font-size:0.8rem;">اضغط على البطاقة لقلبها وإظهار المعنى</p>
+      </div>
+      <div class="flashcard" onclick="document.getElementById('fc-meaning').style.display='block'">
+        <div class="word">${item.word}</div>
+        <div class="meaning" id="fc-meaning" style="display:none;">${item.meaning}</div>
+      </div>
+      <div style="display:flex; justify-content:center; gap:10px;">
+        <button class="success" onclick="toggleComplete('words', '${item.id}', true); nextCard();">عرفتها (انتهت المراجعة)</button>
+        <button class="danger" onclick="nextCard();">لم أعرفها</button>
+      </div>
+    `;
+  };
+
+  window.nextCard = () => {
+    if (idx + 1 < items.length) {
+      idx++;
+      renderCard();
+    } else {
+      alert('اكتملت جميع البطاقات!');
+      switchPage('words');
+    }
+  };
+
+  renderCard();
+}
+
+// 2. Vocab MCQ Mode
+function runVocabMCQ(items, allWords) {
+  const mount = document.getElementById('quiz-mount');
+  mount.innerHTML = `
+    <div class="card">
+      <h3>اختبار معاني الكلمات (اختيارات)</h3>
+    </div>
+    <form id="vocab-mcq-form" onsubmit="submitVocabMCQ(event)">
+      <div id="vmcq-list"></div>
+      <div style="margin-top:16px; display:flex; gap:10px;">
+        <button type="submit" id="vmcq-sub-btn" class="primary">تسليم الاختبار</button>
+        <button type="button" onclick="switchPage('words')">خروج</button>
+      </div>
+    </form>
+  `;
+
+  const container = mount.querySelector('#vmcq-list');
+  items.forEach((item, idx) => {
+    const distractors = allWords.filter(w => w.id !== item.id).map(w => w.meaning).sort(() => 0.5 - Math.random()).slice(0, 3);
+    const opts = [...distractors, item.meaning].sort(() => 0.5 - Math.random());
+    const correctIdx = opts.indexOf(item.meaning);
+
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = `vmcq-node-${item.id}`;
+    card.innerHTML = `
+      <strong>${idx + 1}. ما هو معنى كلمة "${item.word}"؟</strong>
+      <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
+        ${opts.map((opt, i) => `
+          <label style="padding:10px; background:#0b1120; border:1px solid var(--border); border-radius:6px; display:flex; gap:8px;" id="lbl-vmcq-${item.id}-${i}">
+            <input type="radio" name="vans-${item.id}" value="${i}">
+            <span>${opt}</span>
+          </label>
+        `).join('')}
+      </div>
+      <div id="vmcq-res-${item.id}" style="margin-top:8px;"></div>
+    `;
+    container.appendChild(card);
+    card.dataset.correct = correctIdx;
+  });
+
+  window.submitVocabMCQ = (e) => {
+    e.preventDefault();
+    items.forEach(item => {
+      const card = document.getElementById(`vmcq-node-${item.id}`);
+      const correctIdx = parseInt(card.dataset.correct, 10);
+      const chosen = document.querySelector(`input[name="vans-${item.id}"]:checked`);
+      const val = chosen ? parseInt(chosen.value, 10) : null;
+      const isCorrect = val === correctIdx;
+
+      const res = document.getElementById(`vmcq-res-${item.id}`);
+      if (isCorrect) {
+        res.innerHTML = `
+          <div style="padding:8px; background:#064e3b; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
+            <span>صحيح ✓</span>
+            <button type="button" class="success" onclick="toggleComplete('words', '${item.id}', true); this.disabled=true;">انتهت المراجعة</button>
+          </div>
+        `;
+      } else {
+        res.innerHTML = `<div style="padding:8px; background:#450a0a; border-radius:6px;">خطأ ✗ | المعنى: ${item.meaning}</div>`;
+      }
+    });
+    document.getElementById('vmcq-sub-btn').style.display = 'none';
+  };
+}
+
+// 3. Vocab Matching Mode
+function runVocabMatching(items) {
+  const mount = document.getElementById('quiz-mount');
+  const sample = items.sort(() => 0.5 - Math.random()).slice(0, 6);
+  const shuffledWords = [...sample].sort(() => 0.5 - Math.random());
+  const shuffledMeanings = [...sample].sort(() => 0.5 - Math.random());
+
+  mount.innerHTML = `
+    <div class="card">
+      <h3>لعبة مطابقة الكلمات</h3>
+      <p style="color:var(--text-muted); font-size:0.85rem;">اختر كلمة من اليمين ثم اختر معناها المطابق من اليسار.</p>
+    </div>
+    <div class="match-board">
+      <div class="match-col" id="col-words"></div>
+      <div class="match-col" id="col-meanings"></div>
+    </div>
+    <button style="margin-top:20px;" onclick="switchPage('words')">إنهاء</button>
+  `;
+
+  let selectedWord = null;
+  let selectedMeaning = null;
+
+  const colW = mount.querySelector('#col-words');
+  const colM = mount.querySelector('#col-meanings');
+
+  shuffledWords.forEach(w => {
+    const btn = document.createElement('button');
+    btn.className = 'match-btn';
+    btn.innerText = w.word;
+    btn.dataset.id = w.id;
+    btn.onclick = () => {
+      colW.querySelectorAll('.match-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedWord = w;
+      checkMatch();
+    };
+    colW.appendChild(btn);
+  });
+
+  shuffledMeanings.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = 'match-btn';
+    btn.innerText = m.meaning;
+    btn.dataset.id = m.id;
+    btn.onclick = () => {
+      colM.querySelectorAll('.match-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedMeaning = m;
+      checkMatch();
+    };
+    colM.appendChild(btn);
+  });
+
+  function checkMatch() {
+    if (!selectedWord || !selectedMeaning) return;
+    if (selectedWord.id === selectedMeaning.id) {
+      colW.querySelector(`[data-id="${selectedWord.id}"]`).classList.add('matched');
+      colM.querySelector(`[data-id="${selectedMeaning.id}"]`).classList.add('matched');
+      selectedWord = null;
+      selectedMeaning = null;
+    } else {
+      setTimeout(() => {
+        colW.querySelectorAll('.match-btn').forEach(b => b.classList.remove('selected'));
+        colM.querySelectorAll('.match-btn').forEach(b => b.classList.remove('selected'));
+        selectedWord = null;
+        selectedMeaning = null;
+      }, 400);
+    }
+  }
+}
+
+/* ================= Parser (JSON Importer) ================= */
+
 async function importJSON(e) {
   const file = e.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = async (event) => {
+  reader.onload = async (ev) => {
     try {
-      const items = JSON.parse(event.target.result);
-      if (!Array.isArray(items)) throw new Error('الملف يجب أن يحتوي على قائمة (Array) من الأسئلة');
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data)) throw new Error('يجب أن يكون الملف مصفوفة JSON');
 
       const existingGroups = await dbOps.getAll('groups');
       const existingSections = await dbOps.getAll('sections');
 
-      for (const item of items) {
+      for (const item of data) {
+        // إذا كان العنصر مفردة
+        if (item.word && item.meaning) {
+          let wg = (await dbOps.getAll('wordGroups')).find(g => g.name === (item.group || 'مفردات عامة'));
+          if (!wg) {
+            wg = { id: 'wg_' + Date.now() + Math.random(), name: item.group || 'مفردات عامة' };
+            await dbOps.put('wordGroups', wg);
+          }
+          await dbOps.put('words', {
+            id: 'w_' + Date.now() + Math.random(),
+            groupId: wg.id,
+            word: item.word,
+            meaning: item.meaning,
+            completed: false,
+            starred: false
+          });
+          continue;
+        }
+
+        // إذا كان العنصر سؤالاً
         let group = existingGroups.find(g => g.name === item.group);
         if (!group) {
           group = { id: 'g_' + Date.now() + Math.random(), name: item.group };
@@ -381,251 +1113,38 @@ async function importJSON(e) {
           existingGroups.push(group);
         }
 
-        let section = existingSections.find(s => s.name === item.section && s.groupId === group.id);
+        let section = existingSections.find(s => s.title === item.sectionTitle && s.groupId === group.id);
         if (!section) {
-          section = { id: 's_' + Date.now() + Math.random(), name: item.section, groupId: group.id };
+          section = {
+            id: 's_' + Date.now() + Math.random(),
+            groupId: group.id,
+            num: item.sectionNum || 1,
+            title: item.sectionTitle || item.section || 'القسم العام'
+          };
           await dbOps.put('sections', section);
           existingSections.push(section);
         }
 
-        const q = {
+        await dbOps.put('questions', {
           id: 'q_' + Date.now() + Math.random(),
           groupId: group.id,
           sectionId: section.id,
+          type: item.type === 'لفظي' ? 'لفظي' : 'كمي',
           text: item.text,
           options: item.options,
           correct: Number(item.correct),
           fileId: null,
-          completed: false
-        };
-        await dbOps.put('questions', q);
+          completed: false,
+          starred: false
+        });
       }
-      alert('تم الاستيراد بنجاح');
-      renderApp();
+      alert('تم استيراد كافة البيانات بنجاح!');
+      refreshUI();
     } catch (err) {
-      alert('فشل استيراد الملف: ' + err.message);
+      alert('خطأ أثناء قراءة الملف: ' + err.message);
     }
   };
   reader.readAsText(file);
-}
-
-async function renderApp() {
-  const groups = await dbOps.getAll('groups');
-  const sections = await dbOps.getAll('sections');
-  const questions = await dbOps.getAll('questions');
-
-  const treeContainer = document.getElementById('active-tree');
-  treeContainer.innerHTML = '';
-
-  const activeQuestions = questions.filter(q => !q.completed);
-  const completedQuestions = questions.filter(q => q.completed);
-
-  // Render Groups & Sections
-  groups.forEach(group => {
-    const groupSections = sections.filter(s => s.groupId === group.id);
-    const groupQCount = activeQuestions.filter(q => q.groupId === group.id).length;
-
-    const groupDiv = document.createElement('div');
-    groupDiv.innerHTML = `
-      <div class="group-header">
-        <div>
-          <span style="font-weight: bold; font-size: 1.1rem;">المجموعة: ${group.name}</span>
-          <span style="color: var(--text-muted); font-size: 0.85rem; margin-right: 8px;">(${groupQCount} سؤال نشط)</span>
-        </div>
-        <div>
-          <button class="primary" onclick="startQuiz('group', '${group.id}')">اختبار المجموعة</button>
-        </div>
-      </div>
-    `;
-
-    groupSections.forEach(section => {
-      const sectionQuestions = activeQuestions.filter(q => q.sectionId === section.id);
-      const sectionDiv = document.createElement('div');
-      sectionDiv.style.marginRight = '20px';
-      sectionDiv.innerHTML = `
-        <div class="section-header">
-          <div>
-            <strong>قسم: ${section.name}</strong>
-            <span style="color: var(--text-muted); font-size: 0.85rem; margin-right: 8px;">(${sectionQuestions.length} سؤال)</span>
-          </div>
-          <div>
-            <button onclick="startQuiz('section', '${section.id}')">اختبار القسم</button>
-          </div>
-        </div>
-      `;
-
-      const qListDiv = document.createElement('div');
-      sectionQuestions.forEach(q => {
-        const qCard = createQuestionCard(q, false);
-        qListDiv.appendChild(qCard);
-      });
-
-      sectionDiv.appendChild(qListDiv);
-      groupDiv.appendChild(sectionDiv);
-    });
-
-    treeContainer.appendChild(groupDiv);
-  });
-
-  // Render Completed View
-  const completedList = document.getElementById('completed-list');
-  completedList.innerHTML = '';
-  if (completedQuestions.length === 0) {
-    completedList.innerHTML = '<p style="color: var(--text-muted);">لا توجد أسئلة مكتملة بعد.</p>';
-  } else {
-    completedQuestions.forEach(q => {
-      const card = createQuestionCard(q, true);
-      completedList.appendChild(card);
-    });
-  }
-}
-
-function createQuestionCard(q, isCompleted) {
-  const card = document.createElement('div');
-  card.className = 'question-card';
-  card.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-      <p style="font-weight: 500;">${q.text}</p>
-      ${!isCompleted ? `<button class="success" style="font-size: 0.8rem;" onclick="markCompleted('${q.id}')">انتهت المراجعة</button>` : ''}
-    </div>
-    <div class="options-grid">
-      ${q.options.map((opt, i) => `
-        <div class="option-item ${i === q.correct ? 'correct' : ''}">
-          ${String.fromCharCode(65 + i)}:${opt}
-        </div>
-      `).join('')}
-    </div>
-    <div id="media-holder-${q.id}"></div>
-  `;
-  if (q.fileId) renderMedia(q.fileId, card.querySelector(`#media-holder-${q.id}`));
-  return card;
-}
-
-async function renderMedia(fileId, targetElement) {
-  const record = await dbOps.get('files', fileId);
-  if (!record) return;
-
-  const url = URL.createObjectURL(record.data);
-  if (record.type.startsWith('image/')) {
-    const img = document.createElement('img');
-    img.src = url;
-    img.className = 'media-preview';
-    targetElement.appendChild(img);
-  } else if (record.type === 'application/pdf') {
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.className = 'pdf-link';
-    link.textContent = `عرض ملف مرفق (${record.name})`;
-    targetElement.appendChild(link);
-  }
-}
-
-async function markCompleted(questionId) {
-  const question = await dbOps.get('questions', questionId);
-  if (!question) return;
-  question.completed = true;
-  await dbOps.put('questions', question);
-  renderApp();
-}
-
-/**
- * Quiz Engine (Forms Style)
- */
-async function startQuiz(type, targetId = null) {
-  const questions = await dbOps.getAll('questions');
-  let selected = questions.filter(q => !q.completed);
-
-  if (type === 'group') selected = selected.filter(q => q.groupId === targetId);
-  if (type === 'section') selected = selected.filter(q => q.sectionId === targetId);
-
-  if (selected.length === 0) return alert('لا توجد أسئلة نشطة متاحة لهذا الاختبار.');
-
-  activeQuizQuestions = selected;
-  quizSubmitted = false;
-
-  document.getElementById('tab-quiz').style.display = 'block';
-  switchView('quiz');
-  renderQuiz();
-}
-
-function renderQuiz() {
-  const container = document.getElementById('quiz-container');
-  container.innerHTML = `
-    <div class="card" style="margin-bottom: 24px;">
-      <h2>جلسة اختبار نماذج القدرات</h2>
-      <p style="color: var(--text-muted);">أجب عن كافة الأسئلة ثم اضغط "تسليم" في نهاية الصفحة لمعرفة نتيجتك ومراجعة الإجابات.</p>
-    </div>
-    <form id="quiz-form" onsubmit="submitQuiz(event)">
-      <div id="quiz-questions-list"></div>
-      <div style="margin-top: 24px; display: flex; gap: 12px;">
-        <button type="submit" id="btn-submit-quiz" class="primary" style="padding: 12px 24px; font-size: 1rem;">تسليم الاختبار</button>
-        <button type="button" onclick="switchView('manage')">خروج</button>
-      </div>
-    </form>
-  `;
-
-  const qList = document.getElementById('quiz-questions-list');
-  activeQuizQuestions.forEach((q, idx) => {
-    const qDiv = document.createElement('div');
-    qDiv.className = 'quiz-question';
-    qDiv.id = `quiz-node-${q.id}`;
-    qDiv.innerHTML = `
-      <div style="font-weight: 600; font-size: 1rem; margin-bottom: 8px;">سؤال ${idx + 1}: ${q.text}</div>
-      <div id="quiz-media-${q.id}"></div>
-      <div class="quiz-options">
-        ${q.options.map((opt, i) => `
-          <label class="quiz-choice" id="label-${q.id}-${i}">
-            <input type="radio" name="ans-${q.id}" value="${i}" ${quizSubmitted ? 'disabled' : ''}>
-            <span>${opt}</span>
-          </label>
-        `).join('')}
-      </div>
-      <div id="quiz-result-${q.id}"></div>
-    `;
-    qList.appendChild(qDiv);
-    if (q.fileId) renderMedia(q.fileId, qDiv.querySelector(`#quiz-media-${q.id}`));
-  });
-}
-
-function submitQuiz(e) {
-  e.preventDefault();
-  quizSubmitted = true;
-  let score = 0;
-
-  activeQuizQuestions.forEach(q => {
-    const selected = document.querySelector(`input[name="ans-${q.id}"]:checked`);
-    const userVal = selected ? parseInt(selected.value, 10) : null;
-    const isCorrect = userVal === q.correct;
-    if (isCorrect) score++;
-
-    const resDiv = document.getElementById(`quiz-result-${q.id}`);
-    resDiv.className = `review-box ${isCorrect ? 'option-item correct' : 'option-item wrong'}`;
-    resDiv.style.marginTop = '12px';
-
-    if (isCorrect) {
-      resDiv.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <span>إجابة صحيحة!</span>
-          <button type="button" class="success" onclick="markCompleted('${q.id}'); this.disabled=true; this.innerText='تم النقل لمكتملة المراجعة';">انتهت المراجعة</button>
-        </div>
-      `;
-    } else {
-      resDiv.innerHTML = `
-        <div>إجابة خاطئة. الإجابة الصحيحة هي: <strong>${q.options[q.correct]}</strong></div>
-      `;
-    }
-
-    // Color-code choices
-    q.options.forEach((_, i) => {
-      const label = document.getElementById(`label-${q.id}-${i}`);
-      if (i === q.correct) label.style.borderColor = 'var(--success)';
-      if (userVal === i && !isCorrect) label.style.borderColor = 'var(--danger)';
-    });
-  });
-
-  document.getElementById('btn-submit-quiz').style.display = 'none';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
 </body>
