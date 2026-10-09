@@ -1,1213 +1,398 @@
 <!DOCTYPE html>
+<!-- File: index.html — Quduraty complete frontend, manual sync edition. -->
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>منصة تدريب بنك أسئلة ومعاني القدرات</title>
-  <style>
-    :root {
-      --bg: #0b1120;
-      --card-bg: #151f32;
-      --border: #24324d;
-      --primary: #38bdf8;
-      --primary-hover: #0284c7;
-      --accent: #f59e0b;
-      --success: #10b981;
-      --danger: #ef4444;
-      --text: #f1f5f9;
-      --text-muted: #94a3b8;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-    body { background-color: var(--bg); color: var(--text); padding: 12px; font-size: 15px; }
-    .container { max-width: 850px; margin: 0 auto; }
-
-    header { margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    h1 { font-size: 1.25rem; color: var(--primary); font-weight: 700; }
-    .nav-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-    .nav-tabs button { font-size: 0.85rem; padding: 10px 4px; text-align: center; white-space: nowrap; }
-
-    button { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-    button:active { transform: scale(0.98); }
-    button.primary { background: var(--primary); color: #021226; font-weight: 600; border: none; }
-    button.success { background: var(--success); color: #fff; border: none; }
-    button.danger { background: var(--danger); color: #fff; border: none; }
-    button.accent { background: var(--accent); color: #021226; font-weight: 600; border: none; }
-    button.active { border-color: var(--primary); background: #1e3a8a; color: #fff; }
-    button.icon-btn { padding: 6px 10px; font-size: 1rem; border-radius: 6px; }
-
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
-    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-    label { font-size: 0.8rem; color: var(--text-muted); }
-    input, select, textarea { background: #0b1120; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; font-size: 0.95rem; width: 100%; }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary); }
-
-    .toggle-group { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
-    .toggle-group button { flex: 1; border-radius: 0; border: none; background: #0b1120; color: var(--text-muted); padding: 10px; }
-    .toggle-group button.selected { background: var(--primary); color: #021226; font-weight: 700; }
-
-    .group-box { background: #131d32; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
-    .group-head { background: #1a2744; padding: 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 8px; }
-    .section-box { border-right: 3px solid var(--primary); background: #151f32; margin: 10px 10px 10px 0; border-radius: 6px; padding: 10px; }
-    .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
-
-    .item-card { background: #0e1626; border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; }
-    .item-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-    .star-btn { background: none; border: none; color: #475569; font-size: 1.3rem; padding: 2px 6px; }
-    .star-btn.starred { color: var(--accent); }
-    .badge { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; display: inline-block; }
-    .badge-quant { background: #3b82f6; color: #fff; }
-    .badge-verbal { background: #8b5cf6; color: #fff; }
-
-    .options-grid { display: grid; grid-template-columns: 1fr; gap: 6px; margin: 10px 0; }
-    @media(min-width: 600px) { .options-grid { grid-template-columns: 1fr 1fr; } }
-    .option-cell { background: #080d1a; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.85rem; }
-    .option-cell.correct { border-color: var(--success); color: var(--success); font-weight: bold; }
-
-    .media-preview { width: 100%; max-height: 250px; object-fit: contain; border-radius: 6px; margin-top: 8px; }
-
-    dialog { margin: auto; border-radius: 12px; border: 1px solid var(--border); background: var(--card-bg); color: var(--text); padding: 18px; width: 92%; max-width: 500px; max-height: 88vh; overflow-y: auto; }
-    dialog::backdrop { background: rgba(0,0,0,0.75); }
-
-    .flashcard { min-height: 220px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; background: #131d32; border: 2px dashed var(--border); border-radius: 14px; cursor: pointer; margin-bottom: 16px; }
-    .flashcard .word { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
-    .flashcard .meaning { font-size: 1.3rem; color: var(--success); margin-top: 14px; }
-
-    .match-board { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
-    .match-col { display: flex; flex-direction: column; gap: 8px; }
-    .match-btn { width: 100%; min-height: 50px; text-align: center; border: 1px solid var(--border); background: #0f172a; padding: 8px; font-size: 0.85rem; border-radius: 8px; justify-content: center; }
-    .match-btn.selected { border-color: var(--primary); background: #1e3a8a; }
-    .match-btn.matched { border-color: var(--success); background: #064e3b; opacity: 0.6; pointer-events: none; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>قدراتي — بنك الأسئلة ومعاني الكلمات</title>
+<style>
+:root{--bg:#0b1120;--card-bg:#151f32;--border:#24324d;--primary:#38bdf8;--accent:#f59e0b;--success:#10b981;--danger:#ef4444;--text:#f1f5f9;--text-muted:#94a3b8}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}body{background:var(--bg);color:var(--text);padding:12px;font-size:15px}.container{max-width:850px;margin:auto}header{margin-bottom:16px;border-bottom:1px solid var(--border);padding:20px 0 12px}.top-bar,.toolbar,.actions,.section-head,.group-head,.item-card-header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.top-bar{margin-bottom:12px}h1{font-size:1.25rem;color:var(--primary)}h2{font-size:1.2rem}h3{font-size:1.05rem}.nav-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.nav-tabs button{font-size:.85rem;padding:10px 4px}.actions{justify-content:flex-start}button{background:var(--card-bg);color:var(--text);border:1px solid var(--border);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:.9rem;font-weight:500;display:inline-flex;align-items:center;justify-content:center;gap:6px}button:active{transform:scale(.98)}button:disabled{opacity:.5;cursor:wait}button.primary{background:var(--primary);color:#021226;border:none;font-weight:600}button.success{background:var(--success);color:white;border:none}button.danger{background:var(--danger);color:white;border:none}button.accent{background:var(--accent);color:#021226;border:none}button.active{border-color:var(--primary);background:#1e3a8a;color:white}button.icon-btn{padding:6px 10px}.card{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}.form-group{display:flex;flex-direction:column;gap:6px;margin:12px 0}label,.muted{color:var(--text-muted);font-size:.85rem}input,select,textarea{background:var(--bg);border:1px solid var(--border);color:white;padding:10px;border-radius:8px;font-size:.95rem;width:100%}input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)}textarea{resize:vertical}input[type=radio]{width:auto}.two-cols{display:grid;grid-template-columns:1fr 1fr;gap:8px}.toggle-group{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}.toggle-group button{flex:1;border:none;border-radius:0;background:var(--bg);color:var(--text-muted)}.toggle-group button.selected{background:var(--primary);color:#021226}.group-box{background:#131d32;border:1px solid var(--border);border-radius:10px;margin-bottom:16px;overflow:hidden}.group-head{background:#1a2744;padding:12px;border-bottom:1px solid var(--border)}.section-box{border-right:3px solid var(--primary);background:var(--card-bg);margin:10px;border-radius:6px;padding:10px}.section-head{margin-bottom:8px}.item-card{background:#0e1626;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px}.item-card-header{align-items:flex-start}.star-btn{background:none;border:none;color:#475569;font-size:1.3rem;padding:2px 6px}.star-btn.starred{color:var(--accent)}.badge{font-size:.7rem;padding:2px 6px;border-radius:4px;font-weight:600;display:inline-block}.badge-quant{background:#3b82f6}.badge-verbal{background:#8b5cf6}.options-grid{display:grid;grid-template-columns:1fr;gap:6px;margin:10px 0}.option-cell,.quiz-option{background:#080d1a;padding:8px 10px;border-radius:6px;border:1px solid var(--border);font-size:.9rem}.option-cell.correct{border-color:var(--success);color:var(--success);font-weight:bold}.quiz-option{display:flex;align-items:center;gap:8px;cursor:pointer;color:var(--text);margin:6px 0}.text{white-space:pre-wrap;overflow-wrap:anywhere}.media-preview{width:100%;max-height:250px;object-fit:contain;border-radius:6px;margin-top:8px}a{color:var(--primary)}dialog{margin:auto;border-radius:12px;border:1px solid var(--border);background:var(--card-bg);color:var(--text);padding:18px;width:92%;max-width:500px;max-height:88vh;overflow:auto}dialog::backdrop{background:#000b}.dialog-footer{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:14px}.flashcard{min-height:220px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;background:#131d32;border:2px dashed var(--border);border-radius:14px;cursor:pointer;margin-bottom:16px}.flashcard .word{font-size:1.8rem;font-weight:800;color:var(--primary)}.flashcard .meaning{font-size:1.3rem;color:var(--success);margin-top:14px}.match-board{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}.match-col{display:flex;flex-direction:column;gap:8px}.match-btn{width:100%;min-height:50px;border:1px solid var(--border);background:#0f172a;padding:8px;font-size:.85rem;border-radius:8px}.match-btn.selected{border-color:var(--primary);background:#1e3a8a}.match-btn.matched{border-color:var(--success);background:#064e3b;opacity:.6;pointer-events:none}.feedback{padding:10px;margin-top:10px;border-radius:6px}.feedback.good{background:#064e3b;color:#6ee7b7}.feedback.bad{background:#450a0a;color:#fca5a5}[hidden]{display:none!important}@media(min-width:600px){.options-grid{grid-template-columns:1fr 1fr}}@media(max-width:450px){button{padding:8px 10px}.nav-tabs button{font-size:.78rem}.item-card-header .actions{width:100%;justify-content:flex-end}}
+</style>
 </head>
 <body>
 <div class="container">
-  <header>
-    <div class="top-bar">
-      <h1>أكاديمية القدرات</h1>
-      <button class="accent" onclick="openStarredPanel()">★ الأسئلة المميزة (<span id="starred-count">0</span>)</button>
-    </div>
-    <div class="nav-tabs">
-      <button id="tab-questions" class="active" onclick="switchPage('questions')">بنك الأسئلة</button>
-      <button id="tab-words" onclick="switchPage('words')">معاني الكلمات</button>
-      <button id="tab-completed" onclick="switchPage('completed')">مكتملة المراجعة</button>
-    </div>
-  </header>
-
-  <!-- PAGE 1: Questions Bank -->
-  <div id="page-questions">
-    <div class="card" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between; align-items:center;">
-      <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button class="primary" onclick="startQuiz('all')">اختبار كافة الأسئلة</button>
-        <button onclick="openModal('modal-group')">+ مجموعة</button>
-        <button onclick="openModal('modal-section')">+ قسم</button>
-        <button onclick="openModal('modal-question')">+ سؤال</button>
-      </div>
-      <div>
-        <input type="file" id="json-input" accept=".json" style="display:none;" onchange="importJSON(event)">
-        <button onclick="document.getElementById('json-input').click()">استيراد JSON</button>
-      </div>
-    </div>
-    <div id="questions-tree"></div>
-  </div>
-
-  <!-- PAGE 2: Vocabulary Page -->
-  <div id="page-words" style="display:none;">
-    <div class="card" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:space-between; align-items:center;">
-      <div style="display:flex; gap:6px; flex-wrap:wrap;">
-        <button onclick="openModal('modal-word-group')">+ مجموعة كلمات</button>
-        <button onclick="openModal('modal-word')">+ إضافة كلمة</button>
-      </div>
-    </div>
-    <div id="words-tree"></div>
-  </div>
-
-  <!-- PAGE 3: Completed Reviews -->
-  <div id="page-completed" style="display:none;">
-    <div class="card">
-      <h3 style="margin-bottom:12px;">العناصر مكتملة المراجعة</h3>
-      <div id="completed-container"></div>
-    </div>
-  </div>
-
-  <!-- VIEW: Quiz Session -->
-  <div id="page-quiz" style="display:none;">
-    <div id="quiz-mount"></div>
-  </div>
+<header><div class="top-bar"><h1>أكاديمية القدرات</h1><button class="accent" onclick="openStarredPanel()">★ الأسئلة المميزة (<span id="starred-count">0</span>)</button></div><div class="nav-tabs"><button id="tab-questions" class="active" onclick="switchPage('questions')">بنك الأسئلة</button><button id="tab-words" onclick="switchPage('words')">معاني الكلمات</button><button id="tab-completed" onclick="switchPage('completed')">مكتملة المراجعة</button></div></header>
+<div id="page-questions"><div class="card toolbar"><div class="actions"><button class="primary" onclick="startQuiz('all')">اختبار كافة الأسئلة</button><button onclick="openModal('modal-group')">+ مجموعة</button><button onclick="openModal('modal-section')">+ قسم</button><button onclick="openModal('modal-question')">+ سؤال</button></div><input type="file" id="json-input" accept=".json,application/json" hidden onchange="importJSON(event)"><button onclick="document.getElementById('json-input').click()">استيراد JSON</button></div><div id="questions-tree"></div></div>
+<div id="page-words" hidden><div class="card actions"><button onclick="openModal('modal-word-group')">+ مجموعة كلمات</button><button onclick="openModal('modal-word')">+ إضافة كلمة</button></div><div id="words-tree"></div></div>
+<div id="page-completed" hidden><div class="card"><h3 style="margin-bottom:12px">العناصر مكتملة المراجعة</h3><div id="completed-container"></div></div></div>
+<div id="page-quiz" hidden style="display:none"><div id="quiz-mount"></div></div>
 </div>
-
-<!-- ================= MODALS ================= -->
-
-<!-- Starred Questions Pop-up Panel -->
-<dialog id="modal-starred">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
-    <h3>★ الأسئلة المميزة</h3>
-    <button onclick="closeModal('modal-starred')">إغلاق</button>
-  </div>
-  <button class="primary" style="width:100%; margin-bottom:14px;" onclick="startQuiz('starred')">اختبر على الأسئلة المميزة</button>
-  <div id="starred-items-list"></div>
-</dialog>
-
-<!-- Modal: Add Question Group -->
-<dialog id="modal-group">
-  <h3>مجموعة أسئلة جديدة</h3>
-  <div class="form-group" style="margin-top:10px;">
-    <label>اسم المجموعة (مثال: تجميعات النماذج، دورة أقسام المحوسب)</label>
-    <input type="text" id="group-name">
-  </div>
-  <div style="display:flex; justify-content:flex-end; gap:8px;">
-    <button onclick="closeModal('modal-group')">إلغاء</button>
-    <button class="primary" onclick="saveGroup()">حفظ</button>
-  </div>
-</dialog>
-
-<!-- Modal: Add Section -->
-<dialog id="modal-section">
-  <h3>قسم جديد</h3>
-  <div class="form-group" style="margin-top:10px;">
-    <label>المجموعة الرئيسية</label>
-    <select id="section-group-select"></select>
-  </div>
-  <div class="form-group">
-    <label>رقم القسم</label>
-    <input type="number" id="section-num" placeholder="1">
-  </div>
-  <div class="form-group">
-    <label>عنوان القسم</label>
-    <input type="text" id="section-title" placeholder="الهندسة والمثلثات">
-  </div>
-  <div style="display:flex; justify-content:flex-end; gap:8px;">
-    <button onclick="closeModal('modal-section')">إلغاء</button>
-    <button class="primary" onclick="saveSection()">حفظ</button>
-  </div>
-</dialog>
-
-<!-- Modal: Add Question -->
-<dialog id="modal-question">
-  <h3>إضافة سؤال جديد</h3>
-  <div class="form-group" style="margin-top:10px;">
-    <label>تصنيف السؤال</label>
-    <div class="toggle-group">
-      <button type="button" id="btn-type-quant" onclick="selectQuestionType('كمي')">كمي</button>
-      <button type="button" id="btn-type-verbal" class="selected" onclick="selectQuestionType('لفظي')">لفظي</button>
-    </div>
-  </div>
-  <div class="form-group">
-    <label>المجموعة</label>
-    <select id="q-group-select" onchange="syncSectionDropdown()"></select>
-  </div>
-  <div class="form-group">
-    <label>القسم</label>
-    <select id="q-section-select"></select>
-  </div>
-  <div class="form-group">
-    <label>نص السؤال</label>
-    <textarea id="q-text" rows="3"></textarea>
-  </div>
-  <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-    <div class="form-group"><label>خيار أ</label><input type="text" id="opt-0" placeholder="(اختياري إن لم يلزم)"></div>
-    <div class="form-group"><label>خيار ب</label><input type="text" id="opt-1" placeholder="(اختياري)"></div>
-    <div class="form-group"><label>خيار ج</label><input type="text" id="opt-2" placeholder="(اختياري)"></div>
-    <div class="form-group"><label>خيار د</label><input type="text" id="opt-3" placeholder="(اختياري)"></div>
-  </div>
-  <div class="form-group">
-    <label>الخيار الصحيح</label>
-    <select id="q-correct">
-      <option value="0">خيار أ</option>
-      <option value="1">خيار ب</option>
-      <option value="2">خيار ج</option>
-      <option value="3">خيار د</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label>مرفق (صورة $\le$ 4MB أو PDF $\le$ 20MB)</label>
-    <input type="file" id="q-file" accept="image/*,application/pdf">
-  </div>
-  <div style="display:flex; justify-content:flex-end; gap:8px;">
-    <button onclick="closeModal('modal-question')">إلغاء</button>
-    <button class="primary" onclick="saveQuestion()">حفظ السؤال</button>
-  </div>
-</dialog>
-
-<!-- Modal: Add Word Group -->
-<dialog id="modal-word-group">
-  <h3>مجموعة مفردات جديدة</h3>
-  <div class="form-group" style="margin-top:10px;">
-    <label>اسم المجموعة</label>
-    <input type="text" id="word-group-name">
-  </div>
-  <div style="display:flex; justify-content:flex-end; gap:8px;">
-    <button onclick="closeModal('modal-word-group')">إلغاء</button>
-    <button class="primary" onclick="saveWordGroup()">حفظ</button>
-  </div>
-</dialog>
-
-<!-- Modal: Add Word -->
-<dialog id="modal-word">
-  <h3>إضافة مفردة جديدة</h3>
-  <div class="form-group" style="margin-top:10px;">
-    <label>مجموعة الكلمات</label>
-    <select id="word-group-select"></select>
-  </div>
-  <div class="form-group">
-    <label>الكلمة</label>
-    <input type="text" id="word-text">
-  </div>
-  <div class="form-group">
-    <label>المعنى</label>
-    <textarea id="word-meaning" rows="2"></textarea>
-  </div>
-  <div style="display:flex; justify-content:flex-end; gap:8px;">
-    <button onclick="closeModal('modal-word')">إلغاء</button>
-    <button class="primary" onclick="saveWord()">حفظ الكلمة</button>
-  </div>
-</dialog>
-
-<!-- Modal: Vocab Quiz Setup -->
-<dialog id="modal-vocab-quiz-setup">
-  <h3>إعداد اختبار المفردات</h3>
-  <input type="hidden" id="vocab-quiz-group-id">
-  <div class="form-group" style="margin-top:10px;">
-    <label>نطاق الكلمات</label>
-    <select id="vocab-scope">
-      <option value="unreviewed">الكلمات غير المراجعة فقط</option>
-      <option value="starred">الكلمات المميزة بنجمة فقط</option>
-      <option value="all">كافة الكلمات</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label>أسلوب الاختبار</label>
-    <select id="vocab-mode">
-      <option value="flashcards">بطاقات استذكار (Flashcards)</option>
-      <option value="mcq">اختيار من متعدد (MCQ)</option>
-      <option value="match">مطابقة الكلمة بمعناها</option>
-    </select>
-  </div>
-  <div style="display:flex; justify-content:flex-end; gap:8px;">
-    <button onclick="closeModal('modal-vocab-quiz-setup')">إلغاء</button>
-    <button class="primary" onclick="initiateVocabQuiz()">بدء الاختبار</button>
-  </div>
-</dialog>
-
+<dialog id="modal-starred"><div class="toolbar"><h3>★ الأسئلة المميزة</h3><button onclick="closeModal('modal-starred')">إغلاق</button></div><button class="primary" style="width:100%;margin:14px 0" onclick="startQuiz('starred')">اختبر على الأسئلة المميزة</button><div id="starred-items-list"></div></dialog>
+<dialog id="modal-group"><h3>مجموعة أسئلة جديدة</h3><div class="form-group"><label for="group-name">اسم المجموعة</label><input id="group-name"></div><div class="dialog-footer"><button onclick="closeModal('modal-group')">إلغاء</button><button class="primary" onclick="saveGroup()">حفظ</button></div></dialog>
+<dialog id="modal-section"><h3>قسم جديد</h3><div class="form-group"><label for="section-group-select">المجموعة الرئيسية</label><select id="section-group-select"></select></div><div class="form-group"><label for="section-num">رقم القسم</label><input type="number" id="section-num" placeholder="1"></div><div class="form-group"><label for="section-title">عنوان القسم</label><input id="section-title" placeholder="الهندسة والمثلثات"></div><div class="dialog-footer"><button onclick="closeModal('modal-section')">إلغاء</button><button class="primary" onclick="saveSection()">حفظ</button></div></dialog>
+<dialog id="modal-question"><h3>إضافة سؤال جديد</h3><div class="form-group"><label>تصنيف السؤال</label><div class="toggle-group"><button type="button" id="btn-type-quant" onclick="selectQuestionType('كمي')">كمي</button><button type="button" id="btn-type-verbal" class="selected" onclick="selectQuestionType('لفظي')">لفظي</button></div></div><div class="form-group"><label for="q-group-select">المجموعة</label><select id="q-group-select" onchange="syncSectionDropdown()"></select></div><div class="form-group"><label for="q-section-select">القسم</label><select id="q-section-select"></select></div><div class="form-group"><label for="q-text">نص السؤال</label><textarea id="q-text" rows="3"></textarea></div><div class="two-cols"><div class="form-group"><label for="opt-0">خيار أ</label><input id="opt-0"></div><div class="form-group"><label for="opt-1">خيار ب</label><input id="opt-1"></div><div class="form-group"><label for="opt-2">خيار ج</label><input id="opt-2"></div><div class="form-group"><label for="opt-3">خيار د</label><input id="opt-3"></div></div><div class="form-group"><label for="q-correct">الخيار الصحيح</label><select id="q-correct"><option value="0">خيار أ</option><option value="1">خيار ب</option><option value="2">خيار ج</option><option value="3">خيار د</option></select></div><div class="form-group"><label for="q-file">مرفق: صورة حتى 4MB أو PDF حتى 20MB</label><input type="file" id="q-file" accept="image/*,application/pdf"></div><div class="dialog-footer"><button onclick="closeModal('modal-question')">إلغاء</button><button class="primary" onclick="saveQuestion()">حفظ السؤال</button></div></dialog>
+<dialog id="modal-word-group"><h3>مجموعة مفردات جديدة</h3><div class="form-group"><label for="word-group-name">اسم المجموعة</label><input id="word-group-name"></div><div class="dialog-footer"><button onclick="closeModal('modal-word-group')">إلغاء</button><button class="primary" onclick="saveWordGroup()">حفظ</button></div></dialog>
+<dialog id="modal-word"><h3>إضافة مفردة جديدة</h3><div class="form-group"><label for="word-group-select">مجموعة الكلمات</label><select id="word-group-select"></select></div><div class="form-group"><label for="word-text">الكلمة</label><input id="word-text"></div><div class="form-group"><label for="word-meaning">المعنى</label><textarea id="word-meaning" rows="2"></textarea></div><div class="dialog-footer"><button onclick="closeModal('modal-word')">إلغاء</button><button class="primary" onclick="saveWord()">حفظ الكلمة</button></div></dialog>
+<dialog id="modal-vocab-quiz-setup"><h3>إعداد اختبار المفردات</h3><input type="hidden" id="vocab-quiz-group-id"><div class="form-group"><label for="vocab-scope">نطاق الكلمات</label><select id="vocab-scope"><option value="unreviewed">الكلمات غير المراجعة فقط</option><option value="starred">الكلمات المميزة بنجمة فقط</option><option value="all">كافة الكلمات</option></select></div><div class="form-group"><label for="vocab-mode">أسلوب الاختبار</label><select id="vocab-mode"><option value="flashcards">بطاقات استذكار</option><option value="mcq">اختيار من متعدد</option><option value="match">مطابقة الكلمة بمعناها</option></select></div><div class="dialog-footer"><button onclick="closeModal('modal-vocab-quiz-setup')">إلغاء</button><button class="primary" onclick="initiateVocabQuiz()">بدء الاختبار</button></div></dialog>
 <script>
+// File: index.html — UI and existing local-vault compatibility.
 let db;
-const DB_NAME = 'QuduratVault';
-const DB_VER = 2;
-
-function initDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, DB_VER);
-    req.onupgradeneeded = (e) => {
-      const d = e.target.result;
-      if (!d.objectStoreNames.contains('groups')) d.createObjectStore('groups', { keyPath: 'id' });
-      if (!d.objectStoreNames.contains('sections')) d.createObjectStore('sections', { keyPath: 'id' });
-      if (!d.objectStoreNames.contains('questions')) d.createObjectStore('questions', { keyPath: 'id' });
-      if (!d.objectStoreNames.contains('wordGroups')) d.createObjectStore('wordGroups', { keyPath: 'id' });
-      if (!d.objectStoreNames.contains('words')) d.createObjectStore('words', { keyPath: 'id' });
-      if (!d.objectStoreNames.contains('files')) d.createObjectStore('files', { keyPath: 'id' });
-    };
-    req.onsuccess = () => { db = req.result; resolve(); };
-    req.onerror = () => reject(req.error);
-  });
-}
-
-const dbOps = {
-  getAll: (store) => new Promise((resolve) => {
-    try {
-      const tx = db.transaction(store, 'readonly');
-      const r = tx.objectStore(store).getAll();
-      r.onsuccess = () => resolve(r.result || []);
-      r.onerror = () => resolve([]);
-    } catch (e) { resolve([]); }
-  }),
-  put: (store, data) => new Promise((resolve, reject) => {
-    const tx = db.transaction(store, 'readwrite');
-    tx.objectStore(store).put(data);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  }),
-  get: (store, id) => new Promise((resolve) => {
-    try {
-      const tx = db.transaction(store, 'readonly');
-      const r = tx.objectStore(store).get(id);
-      r.onsuccess = () => resolve(r.result);
-      r.onerror = () => resolve(null);
-    } catch(e) { resolve(null); }
-  }),
-  delete: (store, id) => new Promise((resolve, reject) => {
-    const tx = db.transaction(store, 'readwrite');
-    tx.objectStore(store).delete(id);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  })
+const DB_NAME='QuduratVault',DB_VER=2;
+const vaultStores=['groups','sections','questions','wordGroups','words','files'];
+const el=id=>document.getElementById(id);
+function initDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,DB_VER);req.onupgradeneeded=()=>{for(const store of vaultStores)if(!req.result.objectStoreNames.contains(store))req.result.createObjectStore(store,{keyPath:'id'});};req.onsuccess=()=>{db=req.result;db.onversionchange=()=>db.close();resolve();};req.onerror=()=>reject(req.error);req.onblocked=()=>alert('أغلق النوافذ الأخرى ثم أعد فتح التطبيق');});}
+const dbOps={
+ getAll:store=>new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).getAll();r.onsuccess=()=>resolve(r.result||[]);r.onerror=()=>reject(r.error);}),
+ get:(store,id)=>new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).get(id);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);}),
+ put:(store,data)=>new Promise((resolve,reject)=>{const t=db.transaction(store,'readwrite');t.objectStore(store).put(data);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);}),
+ delete:(store,id)=>new Promise((resolve,reject)=>{const t=db.transaction(store,'readwrite');t.objectStore(store).delete(id);t.oncomplete=resolve;t.onerror=()=>reject(t.error);t.onabort=()=>reject(t.error);})
 };
-
-let currentQuestionType = 'لفظي';
-
-window.addEventListener('DOMContentLoaded', async () => {
-  await initDB();
-  refreshUI();
-});
-
-async function openModal(id) {
-  try {
-    if (id === 'modal-section' || id === 'modal-question') await syncGroupDropdowns();
-    if (id === 'modal-word') await syncWordGroupDropdown();
-    if (id === 'modal-question') selectQuestionType('لفظي');
-    const modal = document.getElementById(id);
-    if (modal) modal.showModal();
-  } catch(e) {
-    console.error('Error opening modal:', e);
+let currentQuestionType='لفظي',activeQuizList=[];
+window.addEventListener('DOMContentLoaded',async()=>{await initDB();await refreshUI();});
+async function openModal(id){if(id==='modal-section'||id==='modal-question')await syncGroupDropdowns();if(id==='modal-word')await syncWordGroupDropdown();if(id==='modal-question')selectQuestionType('لفظي');if(!el(id).open)el(id).showModal();}
+function closeModal(id){el(id)?.close();}
+function switchPage(page){for(const name of ['questions','words','completed','quiz']){el('page-'+name).hidden=page!==name;el('page-'+name).style.display=page===name?'block':'none';}for(const name of ['questions','words','completed'])el('tab-'+name).classList.toggle('active',page===name);if(page!=='quiz')refreshUI();}
+function selectQuestionType(type){currentQuestionType=type;el('btn-type-quant').classList.toggle('selected',type==='كمي');el('btn-type-verbal').classList.toggle('selected',type==='لفظي');}
+async function syncGroupDropdowns(){const groups=await dbOps.getAll('groups');for(const id of ['section-group-select','q-group-select'])el(id).innerHTML=groups.length?groups.map(g=>`<option value="${g.id}">${g.name}</option>`).join(''):'<option value="">أنشئ مجموعة أولاً</option>';await syncSectionDropdown();}
+async function syncSectionDropdown(){const sections=(await dbOps.getAll('sections')).filter(s=>String(s.groupId)===el('q-group-select').value);el('q-section-select').innerHTML=sections.length?sections.map(s=>`<option value="${s.id}">قسم ${s.num}: ${s.title}</option>`).join(''):'<option value="">لا توجد أقسام في المجموعة</option>';}
+async function syncWordGroupDropdown(){const groups=await dbOps.getAll('wordGroups');el('word-group-select').innerHTML=groups.length?groups.map(g=>`<option value="${g.id}">${g.name}</option>`).join(''):'<option value="">أنشئ مجموعة كلمات أولاً</option>';}
+async function saveGroup(){const name=el('group-name').value.trim();if(!name)return alert('أدخل اسم المجموعة');await dbOps.put('groups',{id:uid('g'),name});el('group-name').value='';closeModal('modal-group');await refreshUI();}
+async function saveSection(){const groupId=el('section-group-select').value,num=el('section-num').value.trim(),title=el('section-title').value.trim();if(!groupId)return alert('حدد المجموعة أولاً');if(!num||!title)return alert('أدخل رقم القسم وعنوانه');await dbOps.put('sections',{id:uid('s'),groupId,num,title});el('section-num').value='';el('section-title').value='';closeModal('modal-section');await refreshUI();}
+async function saveWordGroup(){const name=el('word-group-name').value.trim();if(!name)return alert('أدخل اسم المجموعة');await dbOps.put('wordGroups',{id:uid('wg'),name});el('word-group-name').value='';closeModal('modal-word-group');await refreshUI();}
+async function saveWord(){const groupId=el('word-group-select').value,word=el('word-text').value.trim(),meaning=el('word-meaning').value.trim();if(!groupId||!word||!meaning)return alert('أكمل المجموعة والكلمة والمعنى');await dbOps.put('words',{id:uid('w'),groupId,word,meaning,starred:false,completed:false});el('word-text').value='';el('word-meaning').value='';closeModal('modal-word');await refreshUI();}
+async function toggleStar(store,id){const item=await dbOps.get(store,id);if(!item)return;item.starred=!item.starred;await dbOps.put(store,item);await refreshUI();}
+async function toggleComplete(store,id,status){const item=await dbOps.get(store,id);if(!item)return;item.completed=status;await dbOps.put(store,item);await refreshUI();}
+function qType(q){return q.type==='كمي'?'كمي':'لفظي';}
+function buildQuestionCard(q,isCompleted=q.completed){const card=document.createElement('div');card.className='item-card';card.innerHTML=`<div class="item-card-header"><div><span class="badge ${q.type==='كمي'?'badge-quant':'badge-verbal'}">${qType(q)}</span> <span class="text">${q.text}</span></div><div class="actions"><button class="star-btn ${q.starred?'starred':''}" aria-label="تمييز السؤال" onclick="toggleStar('questions','${q.id}')">★</button><button class="${isCompleted?'':'success'}" onclick="toggleComplete('questions','${q.id}',${!isCompleted})">${isCompleted?'إعادة للتنشيط':'انتهت المراجعة'}</button><button class="danger icon-btn" aria-label="حذف السؤال" onclick="deleteQuestion('${q.id}')">🗑</button></div></div><div class="options-grid">${(q.options||[]).map((opt,i)=>`<div class="option-cell ${i===q.correct?'correct':''}">${['أ','ب','ج','د'][i]||i+1}: ${opt}</div>`).join('')}</div><div class="question-media"></div>`;if(q.fileId)renderMedia(q.fileId,card.querySelector('.question-media'));return card;}
+function buildWordCard(w,completed=w.completed){const card=document.createElement('div');card.className='item-card';card.innerHTML=`<div class="item-card-header"><div><strong style="color:var(--primary)">${w.word}</strong>: <span class="text">${w.meaning}</span></div><div class="actions"><button class="star-btn ${w.starred?'starred':''}" aria-label="تمييز الكلمة" onclick="toggleStar('words','${w.id}')">★</button><button class="${completed?'':'success'}" onclick="toggleComplete('words','${w.id}',${!completed})">${completed?'إعادة للتنشيط':'انتهت المراجعة'}</button><button class="danger icon-btn" aria-label="حذف الكلمة" onclick="deleteWord('${w.id}')">🗑</button></div></div>`;return card;}
+async function refreshUI(){
+ const [groups,sections,questions,wordGroups,words]=await Promise.all(['groups','sections','questions','wordGroups','words'].map(s=>dbOps.getAll(s)));
+ el('starred-count').textContent=questions.filter(q=>q.starred).length;
+ const tree=el('questions-tree');tree.replaceChildren();if(!groups.length)tree.innerHTML='<div class="card muted">لا توجد مجموعات بعد. أضف مجموعة أو استورد ملف JSON.</div>';
+ for(const g of groups){const box=document.createElement('div');box.className='group-box';const active=questions.filter(q=>String(q.groupId)===String(g.id)&&!q.completed);box.innerHTML=`<div class="group-head"><div><strong>${g.name}</strong> <span class="muted">(${active.length} سؤال نشط)</span></div><div class="actions"><button class="primary" onclick="startQuiz('group','${g.id}')">اختبار المجموعة</button><button class="danger icon-btn" aria-label="حذف المجموعة" onclick="deleteGroup('${g.id}')">🗑</button></div></div><div class="group-body"></div>`;const body=box.querySelector('.group-body'),gSections=sections.filter(s=>String(s.groupId)===String(g.id));if(!gSections.length)body.innerHTML='<div class="card muted">لا توجد أقسام في هذه المجموعة.</div>';for(const s of gSections){const qs=active.filter(q=>String(q.sectionId)===String(s.id)),section=document.createElement('div');section.className='section-box';section.innerHTML=`<div class="section-head"><div><strong>قسم ${s.num}: ${s.title}</strong> <span class="muted">(${qs.length} سؤال)</span></div><div class="actions"><button onclick="startQuiz('section','${s.id}')">اختبار القسم</button><button class="danger icon-btn" aria-label="حذف القسم" onclick="deleteSection('${s.id}')">🗑</button></div></div>`;for(const q of qs)section.append(buildQuestionCard(q));body.append(section);}tree.append(box);}
+ const wt=el('words-tree');wt.replaceChildren();if(!wordGroups.length)wt.innerHTML='<div class="card muted">لا توجد مجموعات كلمات بعد.</div>';for(const g of wordGroups){const ws=words.filter(w=>String(w.groupId)===String(g.id)&&!w.completed),box=document.createElement('div');box.className='group-box';box.innerHTML=`<div class="group-head"><div><strong>${g.name}</strong> <span class="muted">(${ws.length} كلمة نشطة)</span></div><div class="actions"><button class="primary" onclick="openVocabQuizSetup('${g.id}')">اختبر المعاني</button><button class="danger icon-btn" aria-label="حذف مجموعة الكلمات" onclick="deleteWordGroup('${g.id}')">🗑</button></div></div><div class="word-list" style="padding:10px"></div>`;for(const w of ws)box.querySelector('.word-list').append(buildWordCard(w));wt.append(box);}
+ const done=el('completed-container');done.replaceChildren();for(const q of questions.filter(q=>q.completed))done.append(buildQuestionCard(q,true));for(const w of words.filter(w=>w.completed))done.append(buildWordCard(w,true));if(!done.children.length)done.innerHTML='<p class="muted">لا توجد عناصر مكتملة حالياً.</p>';
+}
+const localMediaURLs=new Set();
+async function renderMedia(fileId,container){const f=await dbOps.get('files',fileId);if(!f||!container||!(f.data instanceof Blob))return;const url=URL.createObjectURL(f.data);localMediaURLs.add(url);const node=document.createElement(f.type.startsWith('image/')?'img':'a');if(node.tagName==='IMG'){node.src=url;node.alt='مرفق السؤال';node.className='media-preview';}else{node.href=url;node.target='_blank';node.rel='noopener';node.textContent='📄 عرض المرفق: '+f.name;}container.replaceChildren(node);}
+window.addEventListener('pagehide',()=>{for(const url of localMediaURLs)URL.revokeObjectURL(url);});
+async function openStarredPanel(){const list=el('starred-items-list');list.replaceChildren();for(const q of (await dbOps.getAll('questions')).filter(q=>q.starred))list.append(buildQuestionCard(q,q.completed));if(!list.children.length)list.innerHTML='<p class="muted">لا توجد أسئلة مميزة حتى الآن.</p>';await openModal('modal-starred');}
+async function startQuiz(scope,targetId=null){const questions=await dbOps.getAll('questions');let list=questions.filter(q=>!q.completed);if(scope==='starred'){list=questions.filter(q=>q.starred);closeModal('modal-starred');}else if(scope==='group')list=list.filter(q=>String(q.groupId)===String(targetId));else if(scope==='section')list=list.filter(q=>String(q.sectionId)===String(targetId));if(!list.length)return alert('لا توجد أسئلة متاحة في هذا النطاق');activeQuizList=shuffle(list);switchPage('quiz');renderQuizPage();}
+function renderQuizPage(){const mount=el('quiz-mount');mount.innerHTML='<div class="card"><h2>اختبار الأسئلة</h2><p class="muted">أجب ثم اضغط تسليم لعرض النتيجة.</p><div id="quiz-score"></div></div><form id="quiz-form" onsubmit="submitQuiz(event)"><div id="quiz-fields"></div><div class="actions"><button type="submit" id="quiz-submit-btn" class="primary">تسليم الاختبار</button><button type="button" onclick="switchPage(\'questions\')">إنهاء وخروج</button></div></form>';for(const [index,q]of activeQuizList.entries()){const card=document.createElement('div');card.className='card';card.innerHTML=`<div class="item-card-header"><strong class="text">سؤال ${index+1} (${qType(q)}):\n${q.text}</strong><button type="button" class="star-btn ${q.starred?'starred':''}" onclick="quizStar('${q.id}',this)">★</button></div><div class="question-media"></div>${(q.options||[]).map((opt,i)=>`<label class="quiz-option" id="opt-lbl-${q.id}-${i}"><input type="radio" name="ans-${q.id}" value="${i}"><span>${opt}</span></label>`).join('')}<div id="q-feedback-${q.id}"></div>`;el('quiz-fields').append(card);if(q.fileId)renderMedia(q.fileId,card.querySelector('.question-media'));}}
+async function quizStar(id,button){await toggleStar('questions',id);const item=await dbOps.get('questions',id);button.classList.toggle('starred',!!item?.starred);}
+function submitQuiz(event){event.preventDefault();let score=0;for(const q of activeQuizList){const chosen=document.querySelector(`input[name="ans-${q.id}"]:checked`),answer=chosen?Number(chosen.value):null,right=answer===q.correct;if(right)score++;el('q-feedback-'+q.id).innerHTML=right?`<div class="feedback good actions"><span>إجابة صحيحة ✓</span><button type="button" class="success" onclick="completeFromQuiz('questions','${q.id}',this)">انتهت المراجعة</button></div>`:`<div class="feedback bad">${chosen?'إجابة خاطئة':'لم يتم اختيار إجابة'} | الإجابة الصحيحة: <strong>${q.options[q.correct]||''}</strong></div>`;(q.options||[]).forEach((_,i)=>{const label=el(`opt-lbl-${q.id}-${i}`);if(i===q.correct)label.style.borderColor='var(--success)';else if(i===answer)label.style.borderColor='var(--danger)';});}el('quiz-score').textContent=`النتيجة: ${score} من ${activeQuizList.length}`;el('quiz-submit-btn').hidden=true;el('quiz-fields').querySelectorAll('input[type=radio]').forEach(input=>input.disabled=true);window.scrollTo({top:0,behavior:'smooth'});}
+async function completeFromQuiz(store,id,button){await toggleComplete(store,id,true);button.disabled=true;button.textContent='تم النقل لمكتملة المراجعة';}
+function shuffle(items){const list=[...items];for(let i=list.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[list[i],list[j]]=[list[j],list[i]];}return list;}
+function openVocabQuizSetup(groupId){el('vocab-quiz-group-id').value=groupId;openModal('modal-vocab-quiz-setup');}
+async function initiateVocabQuiz(){const groupId=el('vocab-quiz-group-id').value,scope=el('vocab-scope').value,mode=el('vocab-mode').value,words=await dbOps.getAll('words');let items=words.filter(w=>String(w.groupId)===groupId);if(scope==='unreviewed')items=items.filter(w=>!w.completed);if(scope==='starred')items=items.filter(w=>w.starred);if(!items.length)return alert('لا توجد كلمات ضمن النطاق المحدد');closeModal('modal-vocab-quiz-setup');switchPage('quiz');items=shuffle(items);if(mode==='flashcards')runFlashcards(items);else if(mode==='mcq')runVocabMCQ(items,words);else runVocabMatching(items);}
+function runFlashcards(items){let index=0;const render=()=>{const item=items[index];el('quiz-mount').innerHTML=`<div class="card"><h3>بطاقات الاستذكار (${index+1} من ${items.length})</h3><p class="muted">اضغط البطاقة لإظهار المعنى أو إخفائه.</p></div><button type="button" class="flashcard" style="width:100%" onclick="document.getElementById('fc-meaning').hidden=!document.getElementById('fc-meaning').hidden"><span class="word">${item.word}</span><span class="meaning" id="fc-meaning" hidden>${item.meaning}</span></button><div class="actions"><button class="success" id="fc-known">عرفتها (انتهت المراجعة)</button><button class="danger" id="fc-next">لم أعرفها</button><button onclick="switchPage('words')">خروج</button></div>`;el('fc-known').onclick=async()=>{await toggleComplete('words',item.id,true);window.nextCard();};el('fc-next').onclick=()=>window.nextCard();};window.nextCard=()=>{if(++index<items.length)render();else{alert('اكتملت جميع البطاقات!');switchPage('words');}};render();}
+function runVocabMCQ(items,allWords){const answers=new Map();el('quiz-mount').innerHTML='<div class="card"><h3>اختبار معاني الكلمات</h3><div id="vmcq-score"></div></div><form onsubmit="submitVocabMCQ(event)"><div id="vmcq-list"></div><div class="actions"><button type="submit" id="vmcq-sub-btn" class="primary">تسليم الاختبار</button><button type="button" onclick="switchPage(\'words\')">خروج</button></div></form>';items.forEach((item,index)=>{const distractors=shuffle([...new Set(allWords.map(w=>w.meaning).filter(m=>m!==item.meaning))]).slice(0,3),options=shuffle([...distractors,item.meaning]);answers.set(item.id,options.indexOf(item.meaning));const card=document.createElement('div');card.className='card';card.innerHTML=`<strong>${index+1}. ما معنى كلمة «${item.word}»؟</strong>${options.map((opt,i)=>`<label class="quiz-option" id="lbl-vmcq-${item.id}-${i}"><input type="radio" name="vans-${item.id}" value="${i}"><span>${opt}</span></label>`).join('')}<div id="vmcq-res-${item.id}"></div>`;el('vmcq-list').append(card);});window.submitVocabMCQ=event=>{event.preventDefault();let score=0;for(const item of items){const selected=document.querySelector(`input[name="vans-${item.id}"]:checked`),correct=answers.get(item.id),right=selected&&Number(selected.value)===correct;if(right)score++;el(`lbl-vmcq-${item.id}-${correct}`).style.borderColor='var(--success)';if(selected&&!right)el(`lbl-vmcq-${item.id}-${selected.value}`).style.borderColor='var(--danger)';el('vmcq-res-'+item.id).innerHTML=right?`<div class="feedback good actions"><span>صحيح ✓</span><button type="button" class="success" onclick="completeFromQuiz('words','${item.id}',this)">انتهت المراجعة</button></div>`:`<div class="feedback bad">${selected?'خطأ':'لم تتم الإجابة'} | المعنى: ${item.meaning}</div>`;}el('vmcq-score').textContent=`النتيجة: ${score} من ${items.length}`;el('vmcq-sub-btn').hidden=true;el('vmcq-list').querySelectorAll('input').forEach(input=>input.disabled=true);};}
+function runVocabMatching(items){const sample=shuffle(items).slice(0,6);el('quiz-mount').innerHTML='<div class="card"><h3>مطابقة الكلمات</h3><p class="muted">اختر كلمة ثم اختر معناها.</p><p id="match-score"></p></div><div class="match-board"><div class="match-col" id="col-words"></div><div class="match-col" id="col-meanings"></div></div><button onclick="switchPage(\'words\')">إنهاء</button>';let word=null,meaning=null,locked=false,matched=0;const buttons={words:new Map(),meanings:new Map()};const choose=(kind,item,button)=>{if(locked||button.classList.contains('matched'))return;for(const b of buttons[kind].values())b.classList.remove('selected');button.classList.add('selected');if(kind==='words')word=item;else meaning=item;if(!word||!meaning)return;locked=true;const left=buttons.words.get(word.id),right=buttons.meanings.get(meaning.id);if(word.id===meaning.id){left.classList.add('matched');right.classList.add('matched');left.classList.remove('selected');right.classList.remove('selected');el('match-score').textContent=`تمت مطابقة ${++matched} من ${sample.length}`;word=meaning=null;locked=false;}else setTimeout(()=>{left.classList.remove('selected');right.classList.remove('selected');word=meaning=null;locked=false;},400);};for(const kind of ['words','meanings'])for(const item of shuffle(sample)){const button=document.createElement('button');button.className='match-btn';button.textContent=kind==='words'?item.word:item.meaning;button.onclick=()=>choose(kind,item,button);buttons[kind].set(item.id,button);el(kind==='words'?'col-words':'col-meanings').append(button);}}
+</script>
+<script>
+// File: index.html — import parser, persistent manual sync, and controls.
+// Numeric correct/correctIndex values are ZERO-BASED unless indexBase:1 is explicit.
+function str(value){return value==null?'':String(value).trim();}
+function uid(prefix){return prefix+'_'+crypto.randomUUID().replaceAll('-','');}
+function normalizeQuestion(item) {
+ const text=str(item.text ?? item.question);
+ if(!text)throw new Error('نص السؤال مفقود (text أو question)');
+ let raw=item.options ?? item.choices;
+ if(raw && !Array.isArray(raw) && typeof raw==='object') {
+  const keys=['A','B','C','D'].some(k=>k in raw)?['A','B','C','D']:['أ','ب','ج','د'];
+  raw=keys.map(k=>raw[k]??'');
+ }
+ if(!Array.isArray(raw))throw new Error('options يجب أن تكون مصفوفة أو خيارات A/B/C/D');
+ if(raw.some(x=>x!=null && !['string','number'].includes(typeof x)))throw new Error('الخيارات يجب أن تكون نصوصاً أو أرقاماً');
+ const entries=raw.map((v,i)=>({text:str(v),i})).filter(v=>v.text);
+ if(!entries.length)throw new Error('لا توجد خيارات');
+ const value=item.correctIndex ?? item.correct ?? item.answer;
+ if(value===undefined || value===null || value==='')throw new Error('الإجابة الصحيحة مفقودة');
+ let original;
+ if(typeof value==='number' || /^\d+$/.test(str(value)))original=Number(value)-(Number(item.indexBase)===1?1:0);
+ else {
+  const label=str(value).toUpperCase();
+  if(['A','B','C','D','أ','ب','ج','د'].includes(label))original=(['A','B','C','D'].includes(label)?['A','B','C','D']:['أ','ب','ج','د']).indexOf(label);
+  else {
+   const matches=entries.filter(x=>x.text===str(value));
+   if(matches.length!==1)throw new Error('نص الإجابة غير موجود أو مكرر؛ استخدم رقم الخيار');
+   original=matches[0].i;
   }
+ }
+ const correct=entries.findIndex(x=>x.i===original);
+ if(!Number.isInteger(original)||correct<0)throw new Error('رقم الإجابة غير صالح أو يشير إلى خيار فارغ');
+ return {text,options:entries.map(x=>x.text),correct,type:item.type==='كمي'?'كمي':'لفظي'};
 }
-
-function closeModal(id) { 
-  const modal = document.getElementById(id);
-  if (modal) modal.close(); 
-}
-
-function switchPage(page) {
-  document.getElementById('page-questions').style.display = page === 'questions' ? 'block' : 'none';
-  document.getElementById('page-words').style.display = page === 'words' ? 'block' : 'none';
-  document.getElementById('page-completed').style.display = page === 'completed' ? 'block' : 'none';
-  document.getElementById('page-quiz').style.display = page === 'quiz' ? 'block' : 'none';
-
-  document.getElementById('tab-questions').classList.toggle('active', page === 'questions');
-  document.getElementById('tab-words').classList.toggle('active', page === 'words');
-  document.getElementById('tab-completed').classList.toggle('active', page === 'completed');
-
-  if (page !== 'quiz') refreshUI();
-}
-
-function selectQuestionType(type) {
-  currentQuestionType = type;
-  const bQ = document.getElementById('btn-type-quant');
-  const bV = document.getElementById('btn-type-verbal');
-  if (bQ && bV) {
-    bQ.classList.toggle('selected', type === 'كمي');
-    bV.classList.toggle('selected', type === 'لفظي');
-  }
-}
-
-async function syncGroupDropdowns() {
-  const groups = await dbOps.getAll('groups');
-  const fill = (elId) => {
-    const el = document.getElementById(elId);
-    if (!el) return;
-    if (groups.length === 0) {
-      el.innerHTML = '<option value="">(لا توجد مجموعات، أنشئ مجموعة أولاً)</option>';
-    } else {
-      el.innerHTML = groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
-    }
-  };
-  fill('section-group-select');
-  fill('q-group-select');
-  await syncSectionDropdown();
-}
-
-async function syncSectionDropdown() {
-  const qGroup = document.getElementById('q-group-select');
-  const el = document.getElementById('q-section-select');
-  if (!qGroup || !el) return;
-  const groupId = qGroup.value;
-  const sections = await dbOps.getAll('sections');
-  const filtered = sections.filter(s => String(s.groupId) === String(groupId));
-  if (filtered.length === 0) {
-    el.innerHTML = '<option value="">(لا توجد أقسام في هذه المجموعة)</option>';
-  } else {
-    el.innerHTML = filtered.map(s => `<option value="${s.id}">قسم ${s.num}: ${s.title}</option>`).join('');
-  }
-}
-
-async function syncWordGroupDropdown() {
-  const groups = await dbOps.getAll('wordGroups');
-  const el = document.getElementById('word-group-select');
-  if (!el) return;
-  if (groups.length === 0) {
-    el.innerHTML = '<option value="">(أنشئ مجموعة كلمات أولاً)</option>';
-  } else {
-    el.innerHTML = groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
-  }
-}
-
-/* ================= CRUD Operations ================= */
-
-async function saveGroup() {
-  const name = document.getElementById('group-name').value.trim();
-  if (!name) return alert('أدخل اسم المجموعة');
-  await dbOps.put('groups', { id: 'g_' + Date.now() + Math.random().toString(36).substr(2,4), name });
-  document.getElementById('group-name').value = '';
-  closeModal('modal-group');
-  refreshUI();
-}
-
-async function saveSection() {
-  const groupId = document.getElementById('section-group-select').value;
-  const num = document.getElementById('section-num').value.trim();
-  const title = document.getElementById('section-title').value.trim();
-  if (!groupId) return alert('الرجاء إنشاء واختيار مجموعة أولاً');
-  if (!num || !title) return alert('الرجاء تعبئة رقم وعنوان القسم');
-
-  await dbOps.put('sections', { id: 's_' + Date.now() + Math.random().toString(36).substr(2,4), groupId: String(groupId), num, title });
-  document.getElementById('section-num').value = '';
-  document.getElementById('section-title').value = '';
-  closeModal('modal-section');
-  refreshUI();
-}
-
-async function saveQuestion() {
-  const groupId = document.getElementById('q-group-select').value;
-  const sectionId = document.getElementById('q-section-select').value;
-  const text = document.getElementById('q-text').value.trim();
-  
-  const rawOpts = [
-    document.getElementById('opt-0').value.trim(),
-    document.getElementById('opt-1').value.trim(),
-    document.getElementById('opt-2').value.trim(),
-    document.getElementById('opt-3').value.trim()
-  ];
-  const selectedCorrectIdx = parseInt(document.getElementById('q-correct').value, 10);
-  const file = document.getElementById('q-file').files[0];
-
-  if (!groupId || !sectionId) return alert('يجب تحديد المجموعة والقسم أولاً');
-  if (!text) return alert('أدخل نص السؤال');
-
-  const validOptsWithOriginalIdx = rawOpts
-    .map((opt, idx) => ({ opt, idx }))
-    .filter(item => item.opt !== '');
-
-  if (validOptsWithOriginalIdx.length === 0) return alert('يجب إدخال خيار واحد على الأقل للسؤال');
-  if (!rawOpts[selectedCorrectIdx]) return alert('الحقل المختار كإجابة صحيحة فارغ.');
-
-  const correctOptionText = rawOpts[selectedCorrectIdx];
-  const filteredOpts = validOptsWithOriginalIdx.map(item => item.opt);
-  const newCorrectIndex = filteredOpts.indexOf(correctOptionText);
-
-  let fileId = null;
-  if (file) {
-    if (file.type.startsWith('image/') && file.size > 4 * 1024 * 1024) return alert('الحد الأقصى للصور 4MB');
-    if (file.type === 'application/pdf' && file.size > 20 * 1024 * 1024) return alert('الحد الأقصى لملف PDF هو 20MB');
-    fileId = 'f_' + Date.now();
-    await dbOps.put('files', { id: fileId, data: file, type: file.type, name: file.name });
-  }
-
-  await dbOps.put('questions', {
-    id: 'q_' + Date.now() + Math.random().toString(36).substr(2,4),
-    groupId: String(groupId),
-    sectionId: String(sectionId),
-    type: currentQuestionType,
-    text,
-    options: filteredOpts,
-    correct: newCorrectIndex,
-    fileId,
-    completed: false,
-    starred: false
+function flattenImport(input){
+ if(Array.isArray(input))return input;
+ if(input && typeof input==='object'){
+  if(Array.isArray(input.questions)||Array.isArray(input.words))return [...(input.questions||[]),...(input.words||[])];
+  if(Array.isArray(input.groups))return input.groups.flatMap(g=>{
+   if(!Array.isArray(g.sections))throw new Error('كل مجموعة تحتاج sections');
+   return g.sections.flatMap(s=>{
+    if(!Array.isArray(s.questions))throw new Error('كل قسم يحتاج questions');
+    return s.questions.map(q=>({...q,group:g.name,sectionNum:s.num??s.sectionNum??1,sectionTitle:s.title??s.name??'القسم العام'}));
+   });
   });
-
-  document.getElementById('q-text').value = '';
-  rawOpts.forEach((_, i) => document.getElementById(`opt-${i}`).value = '');
-  document.getElementById('q-file').value = '';
-  closeModal('modal-question');
-  refreshUI();
+ }
+ throw new Error('استخدم مصفوفة JSON أو {questions:[],words:[]} أو {groups:[...]}');
+}
+function buildImport(input,current){
+ const items=flattenImport(input),ops=[];
+ const groups=[...current.groups],sections=[...current.sections],wordGroups=[...current.wordGroups];
+ const qKeys=new Set(current.questions.map(q=>JSON.stringify([q.groupId,q.sectionId,q.type,q.text,q.options,q.correct])));
+ const wKeys=new Set(current.words.map(w=>JSON.stringify([w.groupId,w.word,w.meaning])));
+ let questions=0,words=0,duplicates=0;
+ const put=(store,data)=>ops.push({kind:'put',store,id:data.id,data});
+ items.forEach((item,index)=>{
+  try{
+   if(!item||typeof item!=='object'||Array.isArray(item))throw new Error('العنصر ليس كائناً');
+   if('word' in item || 'meaning' in item){
+    const word=str(item.word),meaning=str(item.meaning);if(!word||!meaning)throw new Error('الكلمة أو المعنى مفقود');
+    const name=str(item.group)||'مفردات عامة';let g=wordGroups.find(g=>g.name===name);
+    if(!g){g={id:uid('wg'),name};wordGroups.push(g);put('wordGroups',g);}
+    const key=JSON.stringify([g.id,word,meaning]);if(wKeys.has(key)){duplicates++;return;}wKeys.add(key);
+    put('words',{id:uid('w'),groupId:g.id,word,meaning,starred:false,completed:false});words++;return;
+   }
+   const question=normalizeQuestion(item);
+   const name=str(item.group)||'تجميعات القدرات';let g=groups.find(g=>g.name===name);
+   if(!g){g={id:uid('g'),name};groups.push(g);put('groups',g);}
+   const num=str(item.sectionNum??1),title=str(item.sectionTitle??item.section)||'القسم العام';
+   let s=sections.find(s=>s.groupId===g.id && String(s.num)===num && s.title===title);
+   if(!s){s={id:uid('s'),groupId:g.id,num,title};sections.push(s);put('sections',s);}
+   const key=JSON.stringify([g.id,s.id,question.type,question.text,question.options,question.correct]);
+   if(qKeys.has(key)){duplicates++;return;}qKeys.add(key);
+   put('questions',{id:uid('q'),groupId:g.id,sectionId:s.id,...question,fileId:null,starred:false,completed:false});questions++;
+  }catch(error){throw new Error(`العنصر ${index+1}: ${error.message}`);}
+ });
+ return {ops,questions,words,duplicates};
 }
 
-async function saveWordGroup() {
-  const name = document.getElementById('word-group-name').value.trim();
-  if (!name) return alert('أدخل اسم مجموعة المفردات');
-  await dbOps.put('wordGroups', { id: 'wg_' + Date.now() + Math.random().toString(36).substr(2,4), name });
-  document.getElementById('word-group-name').value = '';
-  closeModal('modal-word-group');
-  refreshUI();
+
+const SYNC_STORES=['groups','sections','questions','wordGroups','words','files'];
+function emptySyncStores(){return Object.fromEntries(SYNC_STORES.map(s=>[s,[]]));}
+function wireRecord(data){const result={...data};delete result.data;return result;}
+function sameRecord(a,b){return JSON.stringify(a??null)===JSON.stringify(b??null);}
+class ManualSync {
+ constructor({api,load,save,fetcher=fetch,onChange=()=>{}}){this.api=api.replace(/\/$/,'');this.load=load;this.save=save;this.fetcher=fetcher;this.onChange=onChange;this.syncing=false;this.ready=this.initialize();}
+ async initialize(){this.state=await this.load()||{base:{revision:null,stores:emptySyncStores()},working:emptySyncStores(),wipe:false,lastSuccess:null,lastError:null,localDirty:false};this.onChange();}
+ changes(){const ops=[];for(const store of SYNC_STORES){const old=new Map(this.state.base.stores[store].map(x=>[x.id,x]));const now=new Map(this.state.working[store].map(x=>[x.id,x]));for(const [id,data]of now)if(!sameRecord(old.get(id),data))ops.push({kind:'put',store,id,data});for(const id of old.keys())if(!now.has(id))ops.push({kind:'delete',store,id});}return ops;}
+ get color(){if(!this.state)return 'orange';if(this.state.lastError)return 'red';return this.state.lastSuccess&&!this.state.localDirty&&!this.state.wipe&&!this.changes().length?'green':'orange';}
+ async persist(){await this.save(structuredClone(this.state));this.onChange();}
+ async edit(ops,wipe=false){await this.ready;const previous=structuredClone(this.state);try{if(wipe){this.state.working=emptySyncStores();this.state.wipe=true;}for(const op of ops){const list=this.state.working[op.store];const i=list.findIndex(x=>x.id===op.id);if(i>=0)list.splice(i,1);if(op.kind==='put')list.push(structuredClone(op.data));}await this.persist();}catch(error){this.state=previous;this.onChange();throw error;}}
+ async request(path,init={}){
+  const method=init.method||'GET',url=this.api+path;let response;
+  try{response=await this.fetcher(url,{...init,cache:'no-store',signal:AbortSignal.timeout(60000)});}catch(cause){const error=new Error(cause.message||'Network request failed');error.details={url,method,name:cause.name,message:error.message};throw error;}
+  const text=await response.text();let body;try{body=JSON.parse(text);}catch{}
+  if(!response.ok){const error=new Error(body?.error||`HTTP ${response.status}`);error.details={url,method,status:response.status,statusText:response.statusText,response:text,message:error.message};throw error;}
+  if(!body){const error=new Error('Server returned invalid JSON');error.details={url,method,status:response.status,response:text,message:error.message};throw error;}return body;
+ }
+ async sync({force=false,discard=false}={}){
+  await this.ready;if(this.syncing)return;this.syncing=true;this.onChange();
+  try{
+   if(!this.api)throw new Error('لم يتم إعداد عنوان الخادم في QUDURATY_API');
+   let remote=await this.request('/state');
+   if(!remote.stores||!Number.isSafeInteger(remote.revision))throw new Error('Invalid server snapshot');
+   if(discard){this.state={base:remote,working:structuredClone(remote.stores),wipe:false,lastSuccess:new Date().toISOString(),lastError:null,localDirty:false};await this.persist();return;}
+   if(this.state.wipe){
+    if(SYNC_STORES.some(s=>remote.stores[s].length)){const result=await this.request('/wipe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision:remote.revision})});remote={revision:result.revision,stores:emptySyncStores()};}
+    this.state.base=structuredClone(remote);this.state.wipe=false;await this.persist();
+   }
+   let ops=this.changes();const conflicts=[];
+   for(const op of ops){const base=this.state.base.stores[op.store].find(x=>x.id===op.id);const current=remote.stores[op.store].find(x=>x.id===op.id);const wanted=op.kind==='put'?wireRecord(op.data):undefined;if(!sameRecord(current,base)&&!sameRecord(current,wanted))conflicts.push({store:op.store,id:op.id});}
+   if(conflicts.length&&!force){const error=new Error('توجد تغييرات متعارضة على جهاز آخر. التغييرات المحلية محفوظة؛ اختر طريقة الحل من لوحة الخطأ.');error.details={name:'SyncConflict',message:error.message,conflicts,serverRevision:remote.revision,localRevision:this.state.base.revision};throw error;}
+   if(ops.length>2000)throw new Error('أكثر من 2000 تغيير معلق؛ حد دفعة الخادم 2000 عملية');
+   // Upload only on an explicit sync. Keep local blobs until the whole sync succeeds.
+   for(const op of ops.filter(x=>x.kind==='put'&&x.store==='files')){
+    if(!op.data.key){const upload=await this.request('/uploads',{method:'PUT',headers:{'Content-Type':op.data.type,'X-File-Name':encodeURIComponent(op.data.name)},body:op.data.data});Object.assign(op.data,upload);const record=this.state.working.files.find(x=>x.id===op.id);Object.assign(record,upload);await this.persist();}
+   }
+   ops=ops.map(op=>op.kind==='put'?{...op,data:wireRecord(op.data)}:op).filter(op=>!sameRecord(remote.stores[op.store].find(x=>x.id===op.id),op.kind==='put'?op.data:undefined));
+   if(ops.length){const result=await this.request('/batch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision:remote.revision,ops})});
+    for(const op of ops){const list=remote.stores[op.store];const i=list.findIndex(x=>x.id===op.id);if(i>=0)list.splice(i,1);if(op.kind==='put')list.push(op.data);}remote.revision=result.revision;
+   }
+   // Checkpoint the acknowledged write before anything else; no second network read is needed.
+   this.state={base:remote,working:structuredClone(remote.stores),wipe:false,lastSuccess:new Date().toISOString(),lastError:null,localDirty:false};await this.persist();
+  }catch(error){this.state.lastError={time:new Date().toISOString(),...(error.details||{name:error.name,message:error.message})};await this.persist();throw error;}
+  finally{this.syncing=false;this.onChange();}
+ }
 }
 
-async function saveWord() {
-  const groupId = document.getElementById('word-group-select').value;
-  const word = document.getElementById('word-text').value.trim();
-  const meaning = document.getElementById('word-meaning').value.trim();
-  if (!groupId) return alert('حدد مجموعة للكلمة أولاً');
-  if (!word || !meaning) return alert('أكمل حقول الكلمة والمعنى');
 
-  await dbOps.put('words', {
-    id: 'w_' + Date.now() + Math.random().toString(36).substr(2,4),
-    groupId: String(groupId),
-    word,
-    meaning,
-    completed: false,
-    starred: false
+// File: index.html — sync configuration persists on this device.
+const QUDURATY_API = (()=>{try{return localStorage.getItem('QuduratyApiURL')||'';}catch{return '';}})();
+(() => {
+ const stores=SYNC_STORES;
+ const local={...dbOps};
+ const api=QUDURATY_API.replace(/\/$/,'');
+ let queue=Promise.resolve(),status,dot,errorPanel,errorText,syncButton,forceButton,discardButton;
+ const disabledControls=new Set();
+ function report(message){if(status)status.textContent=message;}
+ const cacheDB=new Promise((resolve,reject)=>{
+  const request=indexedDB.open('QuduratyManualSync',1);
+  request.onupgradeneeded=()=>request.result.createObjectStore('cache',{keyPath:'id'});
+  request.onerror=()=>reject(request.error);
+  request.onsuccess=()=>resolve(request.result);
+ });
+ async function cacheRead(){const database=await cacheDB;return new Promise((resolve,reject)=>{const request=database.transaction('cache','readonly').objectStore('cache').get(api||'local');request.onsuccess=()=>resolve(request.result?.state);request.onerror=()=>reject(request.error);});}
+ async function cacheWrite(state){const database=await cacheDB;return new Promise((resolve,reject)=>{const tx=database.transaction('cache','readwrite');tx.objectStore('cache').put({id:api||'local',state});tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('Cache transaction aborted'));});}
+ function updateIndicator(){
+  if(!dot)return;
+  const color=engine.color;
+  dot.dataset.state=color;
+  dot.style.background={green:'#10b981',orange:'#f59e0b',red:'#ef4444'}[color];
+  const label=color==='green'?'آخر مزامنة ناجحة؛ لا تغييرات معلقة':color==='orange'?'توجد تغييرات غير متزامنة أو لم تتم المزامنة بعد':'فشلت المزامنة؛ اضغط لعرض تفاصيل الخطأ';
+  dot.setAttribute('aria-label',label);dot.title=label;
+  report(engine.syncing?'جار المزامنة…':color==='green'?'تمت المزامنة':color==='orange'?(api?'تغييرات غير متزامنة • المزامنة يدوية':'حفظ محلي • المزامنة غير مُعدة'):'فشلت المزامنة');
+  if(syncButton)syncButton.textContent=engine.syncing?'جار المزامنة…':'مزامنة الآن';
+  if(errorPanel?.open){if(color!=='red')errorPanel.close();else errorText.textContent=JSON.stringify(engine.state.lastError,null,2);}
+  if(forceButton)forceButton.hidden=engine.state?.lastError?.name!=='SyncConflict';
+  if(discardButton)discardButton.hidden=engine.state?.lastError?.name!=='SyncConflict';
+  // Prevent form changes while one explicit sync is in flight.
+  if(engine.syncing){for(const control of document.querySelectorAll('button,input,textarea,select'))if(control!==dot&&!control.disabled){control.disabled=true;disabledControls.add(control);}}
+  else{for(const control of disabledControls)control.disabled=false;disabledControls.clear();}
+ }
+ const engine=new ManualSync({api,load:cacheRead,save:cacheWrite,onChange:updateIndicator});
+ function enqueue(action){const work=queue.then(action);queue=work.catch(()=>{});return work;}
+ async function rawAll(store){if(!api)return local.getAll(store);await engine.ready;return structuredClone(engine.state.working[store]||[]);}
+ function localBatch(ops,wipe=false){
+  return new Promise((resolve,reject)=>{
+   const tx=db.transaction(stores,'readwrite');
+   tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('Transaction aborted'));
+   if(wipe)for(const store of stores)tx.objectStore(store).clear();
+   for(const op of ops){const store=tx.objectStore(op.store);op.kind==='delete'?store.delete(op.id):store.put(op.data);}
   });
-
-  document.getElementById('word-text').value = '';
-  document.getElementById('word-meaning').value = '';
-  closeModal('modal-word');
-  refreshUI();
-}
-
-/* ================= Cascading Deletion ================= */
-
-async function deleteGroup(groupId) {
-  if (!confirm('حذف هذه المجموعة سيحذف كافة أقسامها وأسئلتها نهائياً. هل أنت متأكد؟')) return;
-  const sections = await dbOps.getAll('sections');
-  const questions = await dbOps.getAll('questions');
-
-  const secToDelete = sections.filter(s => String(s.groupId) === String(groupId));
-  for (const s of secToDelete) await dbOps.delete('sections', s.id);
-
-  const qToDelete = questions.filter(q => String(q.groupId) === String(groupId));
-  for (const q of qToDelete) {
-    if (q.fileId) await dbOps.delete('files', q.fileId);
-    await dbOps.delete('questions', q.id);
-  }
-  await dbOps.delete('groups', groupId);
-  refreshUI();
-}
-
-async function deleteSection(sectionId) {
-  if (!confirm('حذف هذا القسم سيحذف كافة الأسئلة التابعة له. هل أنت متأكد؟')) return;
-  const questions = await dbOps.getAll('questions');
-  const qToDelete = questions.filter(q => String(q.sectionId) === String(sectionId));
-  for (const q of qToDelete) {
-    if (q.fileId) await dbOps.delete('files', q.fileId);
-    await dbOps.delete('questions', q.id);
-  }
-  await dbOps.delete('sections', sectionId);
-  refreshUI();
-}
-
-async function deleteQuestion(id) {
-  if (!confirm('حذف هذا السؤال؟')) return;
-  const q = await dbOps.get('questions', id);
-  if (q && q.fileId) await dbOps.delete('files', q.fileId);
-  await dbOps.delete('questions', id);
-  refreshUI();
-}
-
-async function deleteWordGroup(groupId) {
-  if (!confirm('حذف هذه المجموعة سيحذف كافة كلماتها. هل أنت متأكد؟')) return;
-  const words = await dbOps.getAll('words');
-  for (const w of words.filter(w => String(w.groupId) === String(groupId))) await dbOps.delete('words', w.id);
-  await dbOps.delete('wordGroups', groupId);
-  refreshUI();
-}
-
-async function deleteWord(id) {
-  if (!confirm('حذف هذه الكلمة؟')) return;
-  await dbOps.delete('words', id);
-  refreshUI();
-}
-
-/* ================= Star & Review Toggles ================= */
-
-async function toggleStar(store, id) {
-  const item = await dbOps.get(store, id);
-  if (!item) return;
-  item.starred = !item.starred;
-  await dbOps.put(store, item);
-  refreshUI();
-}
-
-async function toggleComplete(store, id, status) {
-  const item = await dbOps.get(store, id);
-  if (!item) return;
-  item.completed = status;
-  await dbOps.put(store, item);
-  refreshUI();
-}
-
-/* ================= Rendering Main Interface ================= */
-
-async function refreshUI() {
-  const [groups, sections, questions, wordGroups, words] = await Promise.all([
-    dbOps.getAll('groups'),
-    dbOps.getAll('sections'),
-    dbOps.getAll('questions'),
-    dbOps.getAll('wordGroups'),
-    dbOps.getAll('words')
-  ]);
-
-  const starredQuestions = questions.filter(q => q.starred);
-  const stCount = document.getElementById('starred-count');
-  if (stCount) stCount.innerText = starredQuestions.length;
-
-  // 1. Render Question Tree
-  const qTree = document.getElementById('questions-tree');
-  qTree.innerHTML = '';
-  
-  if (groups.length === 0) {
-    qTree.innerHTML = '<div class="card" style="text-align:center; color:var(--text-muted);">لا توجد مجموعات بعد. اضغط على "+ مجموعة" أو قم باستيراد ملف JSON.</div>';
-  }
-
-  groups.forEach(g => {
-    const gSections = sections.filter(s => String(s.groupId) === String(g.id));
-    const gQuestions = questions.filter(q => String(q.groupId) === String(g.id) && !q.completed);
-
-    const gBox = document.createElement('div');
-    gBox.className = 'group-box';
-    gBox.innerHTML = `
-      <div class="group-head">
-        <div>
-          <strong>${g.name}</strong>
-          <span style="color:var(--text-muted); font-size:0.8rem; margin-right:6px;">(${gQuestions.length} سؤال نشط)</span>
-        </div>
-        <div style="display:flex; gap:6px;">
-          <button class="primary" onclick="startQuiz('group', '${g.id}')">اختبار المجموعة</button>
-          <button class="danger icon-btn" onclick="deleteGroup('${g.id}')">🗑</button>
-        </div>
-      </div>
-      <div class="group-body" id="group-sec-${g.id}"></div>
-    `;
-
-    const secContainer = gBox.querySelector(`#group-sec-${g.id}`);
-    if (gSections.length === 0) {
-      secContainer.innerHTML = '<div style="padding:10px; color:var(--text-muted); font-size:0.85rem;">لا توجد أقسام في هذه المجموعة بعد.</div>';
-    }
-
-    gSections.forEach(s => {
-      const sQuestions = questions.filter(q => String(q.sectionId) === String(s.id) && !q.completed);
-      const sDiv = document.createElement('div');
-      sDiv.className = 'section-box';
-      sDiv.innerHTML = `
-        <div class="section-head">
-          <div>
-            <strong>قسم ${s.num}: ${s.title}</strong>
-            <span style="color:var(--text-muted); font-size:0.75rem; margin-right:6px;">(${sQuestions.length} سؤال)</span>
-          </div>
-          <div style="display:flex; gap:6px;">
-            <button onclick="startQuiz('section', '${s.id}')">اختبار القسم</button>
-            <button class="danger icon-btn" onclick="deleteSection('${s.id}')">🗑</button>
-          </div>
-        </div>
-        <div id="sec-q-${s.id}"></div>
-      `;
-
-      const qList = sDiv.querySelector(`#sec-q-${s.id}`);
-      sQuestions.forEach(q => qList.appendChild(buildQuestionCard(q)));
-      secContainer.appendChild(sDiv);
-    });
-
-    qTree.appendChild(gBox);
+ }
+ function batch(ops,wipe=false){return enqueue(async()=>{if(api)await engine.edit(ops,wipe);else{await localBatch(ops,wipe);await engine.ready;engine.state.localDirty=true;await engine.persist();}});}
+ window.manualSync=options=>enqueue(async()=>{
+  try{await engine.sync(options);await refreshUI();}catch(error){console.error('Quduraty sync failed:',error);/* Details are shown only after pressing the red dot. */}
+ });
+ function escapeHTML(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+ function displayRecord(record){
+  const result={...record};for(const key of ['name','title','num','text','word','meaning'])if(typeof result[key]==='string')result[key]=escapeHTML(result[key]);
+  if(Array.isArray(result.options))result.options=result.options.map(escapeHTML);return result;
+ }
+ // Existing renderers use innerHTML. Escape display copies, keeping stored text intact.
+ Object.assign(dbOps,{
+  getAll:async store=>(await rawAll(store)).map(displayRecord),
+  get:async(store,id)=>api?(await rawAll(store)).find(x=>x.id===id):local.get(store,id),
+  put:(store,data)=>batch([{kind:'put',store,id:data.id,data}]),
+  delete:(store,id)=>batch([{kind:'delete',store,id}])
+ });
+ const originalRefresh=refreshUI;
+ let rendering=Promise.resolve();
+ refreshUI=function(){
+  const work=rendering.then(async()=>{
+   await originalRefresh();
+   const panel=document.getElementById('modal-starred');
+   if(panel?.open){const list=document.getElementById('starred-items-list');list.replaceChildren();for(const q of (await rawAll('questions')).filter(x=>x.starred))list.append(buildQuestionCard(displayRecord(q),q.completed));}
   });
-
-  // 2. Render Words Tree
-  const wTree = document.getElementById('words-tree');
-  wTree.innerHTML = '';
-  if (wordGroups.length === 0) {
-    wTree.innerHTML = '<div class="card" style="text-align:center; color:var(--text-muted);">لا توجد مجموعات كلمات بعد.</div>';
+  rendering=work.catch(error=>{console.error(error);report('تعذر عرض البيانات المحلية');});return rendering;
+ };
+ importJSON=async function(event){
+  const input=event.target,file=input.files[0];if(!file)return;
+  try{
+   const current=Object.fromEntries(await Promise.all(stores.map(async s=>[s,await rawAll(s)])));
+   const result=buildImport(JSON.parse((await file.text()).replace(/^\uFEFF/,'')),current);
+   if(result.ops.length>2000)throw new Error('ملف كبير؛ قسمه إلى ملفات أصغر (حتى 2000 عملية لكل استيراد)');
+   if(result.ops.length)await batch(result.ops);
+   await refreshUI();
+   alert(`تم استيراد ${result.questions} سؤال و${result.words} كلمة. تم تجاوز ${result.duplicates} عنصر مكرر.`);
+  }catch(error){alert('لم يتم الاستيراد: '+error.message);}finally{input.value='';}
+ };
+ saveQuestion=async function(){
+  const groupId=document.getElementById('q-group-select').value,sectionId=document.getElementById('q-section-select').value;
+  if(!groupId||!sectionId)return alert('يجب تحديد المجموعة والقسم أولاً');
+  const raw=Array.from({length:4},(_,i)=>document.getElementById('opt-'+i).value.trim());
+  let q;try{q=normalizeQuestion({text:document.getElementById('q-text').value,options:raw,correct:Number(document.getElementById('q-correct').value),type:currentQuestionType});}catch(error){return alert(error.message);}
+  const file=document.getElementById('q-file').files[0],ops=[];let fileId=null;
+  if(file){
+   const limit=file.type==='application/pdf'?20*1024*1024:file.type.startsWith('image/')?4*1024*1024:0;
+   if(!limit||file.size>limit)return alert('اختر صورة حتى 4MB أو ملف PDF حتى 20MB');
+   fileId=uid('f');let data={id:fileId,data:file,type:file.type,name:file.name};
+   ops.push({kind:'put',store:'files',id:fileId,data});
   }
-
-  wordGroups.forEach(wg => {
-    const gWords = words.filter(w => String(w.groupId) === String(wg.id) && !w.completed);
-    const box = document.createElement('div');
-    box.className = 'group-box';
-    box.innerHTML = `
-      <div class="group-head">
-        <div>
-          <strong>${wg.name}</strong>
-          <span style="color:var(--text-muted); font-size:0.8rem; margin-right:6px;">(${gWords.length} كلمة نشطة)</span>
-        </div>
-        <div style="display:flex; gap:6px;">
-          <button class="primary" onclick="openVocabQuizSetup('${wg.id}')">اختبر المعاني</button>
-          <button class="danger icon-btn" onclick="deleteWordGroup('${wg.id}')">🗑</button>
-        </div>
-      </div>
-      <div style="padding:10px;" id="w-list-${wg.id}"></div>
-    `;
-
-    const list = box.querySelector(`#w-list-${wg.id}`);
-    gWords.forEach(w => {
-      const card = document.createElement('div');
-      card.className = 'item-card';
-      card.innerHTML = `
-        <div class="item-card-header">
-          <div>
-            <span style="font-weight:700; color:var(--primary); font-size:1.05rem;">${w.word}</span>: 
-            <span>${w.meaning}</span>
-          </div>
-          <div style="display:flex; gap:4px; align-items:center;">
-            <button class="star-btn ${w.starred ? 'starred' : ''}" onclick="toggleStar('words', '${w.id}')">★</button>
-            <button class="success" style="font-size:0.75rem;" onclick="toggleComplete('words', '${w.id}', true)">انتهت المراجعة</button>
-            <button class="danger icon-btn" style="font-size:0.8rem;" onclick="deleteWord('${w.id}')">🗑</button>
-          </div>
-        </div>
-      `;
-      list.appendChild(card);
-    });
-
-    wTree.appendChild(box);
-  });
-
-  // 3. Render Completed Items
-  const compCont = document.getElementById('completed-container');
-  compCont.innerHTML = '';
-  const completedQ = questions.filter(q => q.completed);
-  const completedW = words.filter(w => w.completed);
-
-  if (completedQ.length === 0 && completedW.length === 0) {
-    compCont.innerHTML = '<p style="color:var(--text-muted);">لا توجد عناصر مكتملة حالياً.</p>';
-  } else {
-    completedQ.forEach(q => compCont.appendChild(buildQuestionCard(q, true)));
-    completedW.forEach(w => {
-      const card = document.createElement('div');
-      card.className = 'item-card';
-      card.innerHTML = `
-        <div class="item-card-header">
-          <div>
-            <span class="badge" style="background:#059669; color:#fff;">مفردة</span>
-            <strong>${w.word}</strong>: ${w.meaning}
-          </div>
-          <div>
-            <button onclick="toggleComplete('words', '${w.id}', false)">إعادة للتنشيط</button>
-            <button class="danger icon-btn" onclick="deleteWord('${w.id}')">🗑</button>
-          </div>
-        </div>
-      `;
-      compCont.appendChild(card);
-    });
+  const data={id:uid('q'),groupId,sectionId,...q,fileId,completed:false,starred:false};ops.push({kind:'put',store:'questions',id:data.id,data});
+  await batch(ops);document.getElementById('q-text').value='';raw.forEach((_,i)=>document.getElementById('opt-'+i).value='');document.getElementById('q-file').value='';closeModal('modal-question');await refreshUI();
+ };
+ window.deleteAllData=async()=>{
+  if(!confirm('هل تريد حذف جميع الأسئلة والمجموعات والأقسام والكلمات والمرفقات وعلامات المراجعة نهائياً'+(api?' من هذا الجهاز، ومن الخادم وباقي الأجهزة عند المزامنة اليدوية القادمة':' من هذا الجهاز')+'؟ لا يمكن التراجع.'))return;
+  try{
+   await batch([],true);
+   // Clear this origin's old local vault as well, preventing later accidental migration.
+   if(api)await localBatch([],true);
+   activeQuizList=[];window.nextCard=()=>{};window.submitVocabMCQ=()=>{};
+   document.querySelectorAll('dialog[open]').forEach(d=>d.close());
+   document.getElementById('quiz-mount').replaceChildren();
+   document.getElementById('starred-items-list').replaceChildren();
+   switchPage('questions');await refreshUI();alert(api?'تم الحذف محلياً؛ اضغط مزامنة الآن لتطبيق الحذف على الخادم':'تم حذف جميع البيانات');
+  }catch(error){alert('تعذر إكمال الحذف: '+error.message);}
+ };
+ // Replace sequential cascades with one atomic metadata transaction.
+ async function cascade(kind,id,message){
+  if(!confirm(message))return;
+  const ops=[],del=(store,id)=>ops.push({kind:'delete',store,id});
+  if(kind==='groups'||kind==='sections'||kind==='questions'){
+   const questions=await rawAll('questions');
+   for(const q of questions.filter(q=>kind==='groups'?q.groupId===id:kind==='sections'?q.sectionId===id:q.id===id)){if(q.fileId)del('files',q.fileId);del('questions',q.id);}
+   if(kind==='groups')for(const s of (await rawAll('sections')).filter(s=>s.groupId===id))del('sections',s.id);
   }
-}
+  if(kind==='wordGroups')for(const w of (await rawAll('words')).filter(w=>w.groupId===id))del('words',w.id);
+  if(kind!=='questions')del(kind,id);
+  await batch(ops);await refreshUI();
+ }
+ deleteGroup=id=>cascade('groups',id,'حذف المجموعة وجميع أقسامها وأسئلتها؟');
+ deleteSection=id=>cascade('sections',id,'حذف القسم وجميع أسئلته؟');
+ deleteQuestion=id=>cascade('questions',id,'حذف السؤال ومرفقه؟');
+ deleteWordGroup=id=>cascade('wordGroups',id,'حذف المجموعة وجميع كلماتها؟');
+ deleteWord=id=>cascade('words',id,'حذف الكلمة؟');
+ const originalMedia=renderMedia;
+ const mediaURLs=new Set();
+ if(api)renderMedia=async(fileId,container)=>{
+  try{
+   const f=await dbOps.get('files',fileId);if(!f||!container)return;
+   const url=f.data instanceof Blob?URL.createObjectURL(f.data):api+'/files/'+encodeURIComponent(fileId);if(f.data instanceof Blob)mediaURLs.add(url);
+   if(f.type.startsWith('image/')){const img=document.createElement('img');img.className='media-preview';img.alt='سؤال';img.src=url;container.replaceChildren(img);}
+   else {const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.textContent='📄 عرض المرفق: '+f.name;container.replaceChildren(a);}
+  }catch(error){console.error(error);}
+ };
+ window.addEventListener('pagehide',()=>{for(const url of mediaURLs)URL.revokeObjectURL(url);});
+ window.migrateLocalData=async()=>{
+  if(!api)return alert('ضع عنوان الخادم في QUDURATY_API أولاً');
+  if(!confirm('إضافة بيانات هذا الجهاز إلى التغييرات المحلية المعلقة؟ سيتم إرسالها عند الضغط على مزامنة الآن. لن تُحذف النسخة القديمة.'))return;
+  try{
+   await engine.ready;const ops=[];
+   for(const store of stores)for(const data of await local.getAll(store)){
+    if(!engine.state.working[store].some(x=>x.id===data.id))ops.push({kind:'put',store,id:data.id,data});
+   }
+   if(ops.length>2000)throw new Error('البيانات تتجاوز حد النقل دفعة واحدة؛ استخدم ملفات JSON أصغر');
+   if(ops.length)await batch(ops);
+   await refreshUI();alert('تمت إضافة البيانات محلياً؛ اضغط مزامنة الآن لإرسالها');
+  }catch(error){alert('لم يتم النقل: '+error.message);}
+ };
+ const originalMatching=runVocabMatching;
+ runVocabMatching=items=>{
+  const decode=value=>String(value).replace(/&amp;|&lt;|&gt;|&quot;|&#39;/g,c=>({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&#39;':"'"}[c]));
+  return originalMatching(items.map(item=>({...item,word:decode(item.word),meaning:decode(item.meaning)})));
+ };
+ window.addEventListener('unhandledrejection',event=>{event.preventDefault();report('خطأ: '+(event.reason?.message||event.reason));alert('تعذر إكمال العملية: '+(event.reason?.message||event.reason));});
+ window.addEventListener('DOMContentLoaded',()=>{
+  const bar=document.createElement('div');bar.className='card';bar.style.cssText='display:flex;gap:8px;flex-wrap:wrap;align-items:center';
+  status=document.createElement('span');status.style.cssText='flex:1;color:var(--text-muted)';status.setAttribute('role','status');bar.append(status);
+  syncButton=document.createElement('button');syncButton.id='quduraty-sync-button';syncButton.textContent='مزامنة الآن';syncButton.onclick=()=>window.manualSync();if(api)bar.append(syncButton);
+  const migrate=document.createElement('button');migrate.textContent='نقل بيانات هذا الجهاز';migrate.onclick=window.migrateLocalData;if(api)bar.append(migrate);
+  const remove=document.createElement('button');remove.className='danger';remove.textContent='حذف جميع البيانات';remove.onclick=window.deleteAllData;bar.append(remove);
+  const settings=document.createElement('button');settings.id='quduraty-server-settings';settings.textContent='إعداد المزامنة';settings.onclick=()=>{
+   const answer=prompt('عنوان خادم Quduraty (اتركه فارغاً للحفظ المحلي فقط):',api);if(answer===null)return;
+   let address=answer.trim().replace(/\/+$/,'');
+   if(address){try{const url=new URL(address);if(!['https:','http:'].includes(url.protocol)||url.username||url.password||url.search||url.hash)throw new Error();if(url.protocol==='http:'&&!['localhost','127.0.0.1'].includes(url.hostname))throw new Error();address=url.href.replace(/\/+$/,'');}catch{return alert('أدخل عنوان HTTPS صحيحاً، بدون مسار استعلام أو اسم مستخدم');}}
+   try{localStorage.setItem('QuduratyApiURL',address);location.reload();}catch(error){alert('تعذر حفظ إعداد المزامنة: '+error.message);}
+  };bar.append(settings);
+  document.querySelector('header').after(bar);
+  const style=document.createElement('style');style.textContent='[hidden]{display:none!important}input[type=radio]{width:auto;flex-shrink:0}.item-card-header{flex-wrap:wrap}.top-bar{flex-wrap:wrap;gap:8px}#quduraty-sync-dot{position:fixed;top:12px;left:12px;width:20px;height:20px;min-width:20px;padding:0;border-radius:50%;border:2px solid var(--bg);box-shadow:0 0 0 2px var(--border);z-index:1000}#quduraty-sync-dot:focus-visible{outline:3px solid var(--primary);outline-offset:4px}';document.head.append(style);
+  dot=document.createElement('button');dot.id='quduraty-sync-dot';dot.type='button';dot.onclick=()=>{if(engine.color==='red'){errorText.textContent=JSON.stringify(engine.state.lastError,null,2);errorPanel.showModal();}};document.body.append(dot);
+  errorPanel=document.createElement('dialog');errorPanel.id='quduraty-sync-error';
+  const heading=document.createElement('h3');heading.textContent='تفاصيل خطأ المزامنة';errorPanel.append(heading);
+  errorText=document.createElement('pre');errorText.dir='ltr';errorText.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;margin:16px 0;font-size:13px;user-select:text';errorPanel.append(errorText);
+  const close=document.createElement('button');close.textContent='إغلاق';close.onclick=()=>errorPanel.close();errorPanel.append(close);
+  forceButton=document.createElement('button');forceButton.textContent='اعتماد تغييرات هذا الجهاز';forceButton.onclick=()=>{if(confirm('إرسال التغييرات المحلية فوق العناصر المتعارضة على الخادم؟'))window.manualSync({force:true});};errorPanel.append(forceButton);
+  discardButton=document.createElement('button');discardButton.textContent='اعتماد نسخة الخادم';discardButton.onclick=()=>{if(confirm('إلغاء جميع التغييرات المحلية المعلقة وتحميل نسخة الخادم؟'))window.manualSync({discard:true});};errorPanel.append(discardButton);
+  document.body.append(errorPanel);
+  engine.ready.then(updateIndicator).catch(error=>{console.error(error);report('تعذر فتح الحفظ المحلي');});
+  // No timer, focus refresh, page-load fetch, or network write on edit.
+ });
+})();
 
-function buildQuestionCard(q, isCompleted = false) {
-  const card = document.createElement('div');
-  card.className = 'item-card';
-  card.innerHTML = `
-    <div class="item-card-header">
-      <div>
-        <span class="badge ${q.type === 'كمي' ? 'badge-quant' : 'badge-verbal'}">${q.type || 'لفظي'}</span>
-        <span style="font-weight:600; margin-right:6px; white-space: pre-line;">${q.text}</span>
-      </div>
-      <div style="display:flex; align-items:center; gap:4px;">
-        <button class="star-btn ${q.starred ? 'starred' : ''}" onclick="toggleStar('questions', '${q.id}')">★</button>
-        ${!isCompleted ? `<button class="success" style="font-size:0.75rem;" onclick="toggleComplete('questions', '${q.id}', true)">انتهت المراجعة</button>` : `<button onclick="toggleComplete('questions', '${q.id}', false)">إعادة</button>`}
-        <button class="danger icon-btn" style="font-size:0.8rem;" onclick="deleteQuestion('${q.id}')">🗑</button>
-      </div>
-    </div>
-    <div class="options-grid">
-      ${(q.options || []).map((opt, i) => `
-        <div class="option-cell ${i === q.correct ? 'correct' : ''}">
-          ${String.fromCharCode(65 + i)}:${opt}
-        </div>
-      `).join('')}
-    </div>
-    <div id="media-${q.id}"></div>
-  `;
-  if (q.fileId) renderMedia(q.fileId, card.querySelector(`#media-${q.id}`));
-  return card;
-}
-
-async function renderMedia(fileId, container) {
-  const f = await dbOps.get('files', fileId);
-  if (!f) return;
-  const url = URL.createObjectURL(f.data);
-  if (f.type.startsWith('image/')) {
-    container.innerHTML = `<img src="${url}" class="media-preview" alt="سؤال">`;
-  } else {
-    container.innerHTML = `<a href="${url}" target="_blank" style="color:var(--primary); text-decoration:underline; font-size:0.85rem;">📄 عرض ملف المرفق (${f.name})</a>`;
-  }
-}
-
-/* ================= Starred Pop-up Panel ================= */
-
-async function openStarredPanel() {
-  const questions = await dbOps.getAll('questions');
-  const starred = questions.filter(q => q.starred);
-  const list = document.getElementById('starred-items-list');
-  list.innerHTML = '';
-  if (starred.length === 0) {
-    list.innerHTML = '<p style="color:var(--text-muted); text-align:center;">لا توجد أسئلة مميزة حتى الآن.</p>';
-  } else {
-    starred.forEach(q => list.appendChild(buildQuestionCard(q)));
-  }
-  openModal('modal-starred');
-}
-
-/* ================= Forms-style Quiz Engine ================= */
-
-let activeQuizList = [];
-
-async function startQuiz(scope, targetId = null) {
-  const questions = await dbOps.getAll('questions');
-  let filtered = questions.filter(q => !q.completed);
-
-  if (scope === 'starred') {
-    filtered = questions.filter(q => q.starred);
-    closeModal('modal-starred');
-  } else if (scope === 'group') {
-    filtered = filtered.filter(q => String(q.groupId) === String(targetId));
-  } else if (scope === 'section') {
-    filtered = filtered.filter(q => String(q.sectionId) === String(targetId));
-  }
-
-  if (filtered.length === 0) return alert('لا توجد أسئلة متاحة في هذا النطاق');
-
-  activeQuizList = filtered;
-  switchPage('quiz');
-  renderQuizPage();
-}
-
-function renderQuizPage() {
-  const mount = document.getElementById('quiz-mount');
-  mount.innerHTML = `
-    <div class="card">
-      <h2>جلسة اختبار استمارة (Forms)</h2>
-      <p style="color:var(--text-muted); font-size:0.85rem;">أجب عن الأسئلة ثم اضغط "تسليم" بالأسفل لمعرفة النتيجة.</p>
-    </div>
-    <form id="quiz-form" onsubmit="submitQuiz(event)">
-      <div id="quiz-fields"></div>
-      <div style="margin-top:20px; display:flex; gap:10px;">
-        <button type="submit" id="quiz-submit-btn" class="primary" style="padding:10px 24px;">تسليم الاختبار</button>
-        <button type="button" onclick="switchPage('questions')">إنهاء وخروج</button>
-      </div>
-    </form>
-  `;
-
-  const fields = mount.querySelector('#quiz-fields');
-  activeQuizList.forEach((q, idx) => {
-    const qDiv = document.createElement('div');
-    qDiv.className = 'card';
-    qDiv.id = `q-node-${q.id}`;
-    qDiv.innerHTML = `
-      <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
-        <strong style="white-space: pre-line;">سؤال ${idx + 1} (${q.type || 'لفظي'}):\n${q.text}</strong>
-        <button type="button" class="star-btn ${q.starred ? 'starred' : ''}" onclick="toggleStar('questions', '${q.id}'); this.classList.toggle('starred');">★</button>
-      </div>
-      <div id="q-media-${q.id}"></div>
-      <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
-        ${(q.options || []).map((opt, i) => `
-          <label style="display:flex; align-items:center; gap:8px; padding:10px; background:#0b1120; border:1px solid var(--border); border-radius:6px; cursor:pointer;" id="opt-lbl-${q.id}-${i}">
-            <input type="radio" name="ans-${q.id}" value="${i}">
-            <span>${opt}</span>
-          </label>
-        `).join('')}
-      </div>
-      <div id="q-feedback-${q.id}" style="margin-top:10px;"></div>
-    `;
-    fields.appendChild(qDiv);
-    if (q.fileId) renderMedia(q.fileId, qDiv.querySelector(`#q-media-${q.id}`));
-  });
-}
-
-function submitQuiz(e) {
-  e.preventDefault();
-  let score = 0;
-
-  activeQuizList.forEach(q => {
-    const checked = document.querySelector(`input[name="ans-${q.id}"]:checked`);
-    const val = checked ? parseInt(checked.value, 10) : null;
-    const isCorrect = val === q.correct;
-    if (isCorrect) score++;
-
-    const feedback = document.getElementById(`q-feedback-${q.id}`);
-    if (isCorrect) {
-      feedback.innerHTML = `
-        <div style="padding:10px; background:#064e3b; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="color:#6ee7b7; font-weight:bold;">إجابة صحيحة ✓</span>
-          <button type="button" class="success" onclick="toggleComplete('questions', '${q.id}', true); this.disabled=true; this.innerText='تم النقل لمكتملة المراجعة';">انتهت المراجعة</button>
-        </div>
-      `;
-    } else {
-      feedback.innerHTML = `
-        <div style="padding:10px; background:#450a0a; border-radius:6px; color:#fca5a5;">
-          إجابة خاطئة ✗ | الإجابة الصحيحة هي: <strong>${q.options[q.correct] || ''}</strong>
-        </div>
-      `;
-    }
-
-    (q.options || []).forEach((_, i) => {
-      const lbl = document.getElementById(`opt-lbl-${q.id}-${i}`);
-      if (lbl) {
-        if (i === q.correct) lbl.style.borderColor = 'var(--success)';
-        if (val === i && !isCorrect) lbl.style.borderColor = 'var(--danger)';
-      }
-    });
-  });
-
-  document.getElementById('quiz-submit-btn').style.display = 'none';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-/* ================= Vocabulary Testing Modes ================= */
-
-function openVocabQuizSetup(groupId) {
-  document.getElementById('vocab-quiz-group-id').value = groupId;
-  openModal('modal-vocab-quiz-setup');
-}
-
-async function initiateVocabQuiz() {
-  const groupId = document.getElementById('vocab-quiz-group-id').value;
-  const scope = document.getElementById('vocab-scope').value;
-  const mode = document.getElementById('vocab-mode').value;
-  closeModal('modal-vocab-quiz-setup');
-
-  const words = await dbOps.getAll('words');
-  let selected = words.filter(w => String(w.groupId) === String(groupId));
-
-  if (scope === 'unreviewed') selected = selected.filter(w => !w.completed);
-  if (scope === 'starred') selected = selected.filter(w => w.starred);
-
-  if (selected.length === 0) return alert('لا توجد مفردات متاحة ضمن الشروط المحددة');
-
-  switchPage('quiz');
-  if (mode === 'flashcards') runFlashcards(selected);
-  if (mode === 'mcq') runVocabMCQ(selected, words);
-  if (mode === 'match') runVocabMatching(selected);
-}
-
-function runFlashcards(items) {
-  let idx = 0;
-  const mount = document.getElementById('quiz-mount');
-
-  const renderCard = () => {
-    const item = items[idx];
-    mount.innerHTML = `
-      <div class="card" style="text-align:center;">
-        <h3>بطاقات استذكار المعاني (${idx + 1} من ${items.length})</h3>
-        <p style="color:var(--text-muted); font-size:0.8rem;">اضغط على البطاقة لقلبها وإظهار المعنى</p>
-      </div>
-      <div class="flashcard" onclick="document.getElementById('fc-meaning').style.display='block'">
-        <div class="word">${item.word}</div>
-        <div class="meaning" id="fc-meaning" style="display:none;">${item.meaning}</div>
-      </div>
-      <div style="display:flex; justify-content:center; gap:10px;">
-        <button class="success" onclick="toggleComplete('words', '${item.id}', true); nextCard();">عرفتها (انتهت المراجعة)</button>
-        <button class="danger" onclick="nextCard();">لم أعرفها</button>
-      </div>
-    `;
-  };
-
-  window.nextCard = () => {
-    if (idx + 1 < items.length) {
-      idx++;
-      renderCard();
-    } else {
-      alert('اكتملت جميع البطاقات!');
-      switchPage('words');
-    }
-  };
-
-  renderCard();
-}
-
-function runVocabMCQ(items, allWords) {
-  const mount = document.getElementById('quiz-mount');
-  mount.innerHTML = `
-    <div class="card">
-      <h3>اختبار معاني الكلمات (اختيارات)</h3>
-    </div>
-    <form id="vocab-mcq-form" onsubmit="submitVocabMCQ(event)">
-      <div id="vmcq-list"></div>
-      <div style="margin-top:16px; display:flex; gap:10px;">
-        <button type="submit" id="vmcq-sub-btn" class="primary">تسليم الاختبار</button>
-        <button type="button" onclick="switchPage('words')">خروج</button>
-      </div>
-    </form>
-  `;
-
-  const container = mount.querySelector('#vmcq-list');
-  items.forEach((item, idx) => {
-    const distractors = allWords.filter(w => w.id !== item.id).map(w => w.meaning).sort(() => 0.5 - Math.random()).slice(0, 3);
-    const opts = [...distractors, item.meaning].sort(() => 0.5 - Math.random());
-    const correctIdx = opts.indexOf(item.meaning);
-
-    const card = document.createElement('div');
-    card.className = 'card';
-    card.id = `vmcq-node-${item.id}`;
-    card.innerHTML = `
-      <strong>${idx + 1}. ما هو معنى كلمة "${item.word}"؟</strong>
-      <div style="display:flex; flex-direction:column; gap:6px; margin-top:8px;">
-        ${opts.map((opt, i) => `
-          <label style="padding:10px; background:#0b1120; border:1px solid var(--border); border-radius:6px; display:flex; gap:8px;" id="lbl-vmcq-${item.id}-${i}">
-            <input type="radio" name="vans-${item.id}" value="${i}">
-            <span>${opt}</span>
-          </label>
-        `).join('')}
-      </div>
-      <div id="vmcq-res-${item.id}" style="margin-top:8px;"></div>
-    `;
-    container.appendChild(card);
-    card.dataset.correct = correctIdx;
-  });
-
-  window.submitVocabMCQ = (e) => {
-    e.preventDefault();
-    items.forEach(item => {
-      const card = document.getElementById(`vmcq-node-${item.id}`);
-      const correctIdx = parseInt(card.dataset.correct, 10);
-      const chosen = document.querySelector(`input[name="vans-${item.id}"]:checked`);
-      const val = chosen ? parseInt(chosen.value, 10) : null;
-      const isCorrect = val === correctIdx;
-
-      const res = document.getElementById(`vmcq-res-${item.id}`);
-      if (isCorrect) {
-        res.innerHTML = `
-          <div style="padding:8px; background:#064e3b; border-radius:6px; display:flex; justify-content:space-between; align-items:center;">
-            <span>صحيح ✓</span>
-            <button type="button" class="success" onclick="toggleComplete('words', '${item.id}', true); this.disabled=true;">انتهت المراجعة</button>
-          </div>
-        `;
-      } else {
-        res.innerHTML = `<div style="padding:8px; background:#450a0a; border-radius:6px;">خطأ ✗ | المعنى: ${item.meaning}</div>`;
-      }
-    });
-    document.getElementById('vmcq-sub-btn').style.display = 'none';
-  };
-}
-
-function runVocabMatching(items) {
-  const mount = document.getElementById('quiz-mount');
-  const sample = items.sort(() => 0.5 - Math.random()).slice(0, 6);
-  const shuffledWords = [...sample].sort(() => 0.5 - Math.random());
-  const shuffledMeanings = [...sample].sort(() => 0.5 - Math.random());
-
-  mount.innerHTML = `
-    <div class="card">
-      <h3>لعبة مطابقة الكلمات</h3>
-      <p style="color:var(--text-muted); font-size:0.85rem;">اختر كلمة من اليمين ثم اختر معناها المطابق من اليسار.</p>
-    </div>
-    <div class="match-board">
-      <div class="match-col" id="col-words"></div>
-      <div class="match-col" id="col-meanings"></div>
-    </div>
-    <button style="margin-top:20px;" onclick="switchPage('words')">إنهاء</button>
-  `;
-
-  let selectedWord = null;
-  let selectedMeaning = null;
-
-  const colW = mount.querySelector('#col-words');
-  const colM = mount.querySelector('#col-meanings');
-
-  shuffledWords.forEach(w => {
-    const btn = document.createElement('button');
-    btn.className = 'match-btn';
-    btn.innerText = w.word;
-    btn.dataset.id = w.id;
-    btn.onclick = () => {
-      colW.querySelectorAll('.match-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      selectedWord = w;
-      checkMatch();
-    };
-    colW.appendChild(btn);
-  });
-
-  shuffledMeanings.forEach(m => {
-    const btn = document.createElement('button');
-    btn.className = 'match-btn';
-    btn.innerText = m.meaning;
-    btn.dataset.id = m.id;
-    btn.onclick = () => {
-      colM.querySelectorAll('.match-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      selectedMeaning = m;
-      checkMatch();
-    };
-    colM.appendChild(btn);
-  });
-
-  function checkMatch() {
-    if (!selectedWord || !selectedMeaning) return;
-    if (selectedWord.id === selectedMeaning.id) {
-      colW.querySelector(`[data-id="${selectedWord.id}"]`).classList.add('matched');
-      colM.querySelector(`[data-id="${selectedMeaning.id}"]`).classList.add('matched');
-      selectedWord = null;
-      selectedMeaning = null;
-    } else {
-      setTimeout(() => {
-        colW.querySelectorAll('.match-btn').forEach(b => b.classList.remove('selected'));
-        colM.querySelectorAll('.match-btn').forEach(b => b.classList.remove('selected'));
-        selectedWord = null;
-        selectedMeaning = null;
-      }, 400);
-    }
-  }
-}
-
-/* ================= Parser (JSON Importer) ================= */
-
-async function importJSON(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = async (ev) => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      if (!Array.isArray(data)) throw new Error('يجب أن يكون الملف مصفوفة JSON');
-
-      const existingGroups = await dbOps.getAll('groups');
-      const existingSections = await dbOps.getAll('sections');
-
-      for (const item of data) {
-        if (item.word && item.meaning) {
-          const wGroups = await dbOps.getAll('wordGroups');
-          let wg = wGroups.find(g => g.name === (item.group || 'مفردات عامة'));
-          if (!wg) {
-            wg = { id: 'wg_' + Date.now() + Math.random().toString(36).substr(2,4), name: item.group || 'مفردات عامة' };
-            await dbOps.put('wordGroups', wg);
-          }
-          await dbOps.put('words', {
-            id: 'w_' + Date.now() + Math.random().toString(36).substr(2,4),
-            groupId: String(wg.id),
-            word: item.word,
-            meaning: item.meaning,
-            completed: false,
-            starred: false
-          });
-          continue;
-        }
-
-        const grpName = item.group || 'تجميعات القدرات';
-        let group = existingGroups.find(g => g.name === grpName);
-        if (!group) {
-          group = { id: 'g_' + Date.now() + Math.random().toString(36).substr(2,4), name: grpName };
-          await dbOps.put('groups', group);
-          existingGroups.push(group);
-        }
-
-        const secNum = String(item.sectionNum || 1);
-        const secTitle = item.sectionTitle || item.section || 'القسم العام';
-
-        let section = existingSections.find(s => 
-          String(s.groupId) === String(group.id) && 
-          String(s.num) === secNum && 
-          s.title === secTitle
-        );
-
-        if (!section) {
-          section = {
-            id: 's_' + Date.now() + Math.random().toString(36).substr(2,4),
-            groupId: String(group.id),
-            num: secNum,
-            title: secTitle
-          };
-          await dbOps.put('sections', section);
-          existingSections.push(section);
-        }
-
-        const cleanOptions = (item.options || []).filter(o => o && String(o).trim() !== '');
-
-        await dbOps.put('questions', {
-          id: 'q_' + Date.now() + Math.random().toString(36).substr(2,4),
-          groupId: String(group.id),
-          sectionId: String(section.id),
-          type: item.type === 'كمي' ? 'كمي' : 'لفظي',
-          text: item.text,
-          options: cleanOptions,
-          correct: Number(item.correct),
-          fileId: null,
-          completed: false,
-          starred: false
-        });
-      }
-      alert('تم استيراد كافة البيانات وبناء الأقسام بنجاح!');
-      document.getElementById('json-input').value = '';
-      refreshUI();
-    } catch (err) {
-      alert('خطأ أثناء قراءة واستيراد الملف: ' + err.message);
-    }
-  };
-  reader.readAsText(file);
-}
 </script>
 </body>
 </html>
