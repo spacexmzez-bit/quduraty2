@@ -147,7 +147,7 @@ function emptySyncStores(){return Object.fromEntries(SYNC_STORES.map(s=>[s,[]]))
 function wireRecord(data){const result={...data};delete result.data;return result;}
 function sameRecord(a,b){return JSON.stringify(a??null)===JSON.stringify(b??null);}
 class ManualSync {
- constructor({api,load,save,fetcher=fetch,onChange=()=>{}}){this.api=api.replace(/\/$/,'');this.load=load;this.save=save;this.fetcher=fetcher;this.onChange=onChange;this.syncing=false;this.ready=this.initialize();}
+ constructor({api,load,save,fetcher=(...args)=>window.fetch(...args),onChange=()=>{}}){this.api=api.replace(/\/$/,'');this.load=load;this.save=save;this.fetcher=fetcher;this.onChange=onChange;this.syncing=false;this.ready=this.initialize();}
  async initialize(){this.state=await this.load()||{base:{revision:null,stores:emptySyncStores()},working:emptySyncStores(),wipe:false,lastSuccess:null,lastError:null,localDirty:false};this.onChange();}
  changes(){const ops=[];for(const store of SYNC_STORES){const old=new Map(this.state.base.stores[store].map(x=>[x.id,x]));const now=new Map(this.state.working[store].map(x=>[x.id,x]));for(const [id,data]of now)if(!sameRecord(old.get(id),data))ops.push({kind:'put',store,id,data});for(const id of old.keys())if(!now.has(id))ops.push({kind:'delete',store,id});}return ops;}
  get color(){if(!this.state)return 'orange';if(this.state.lastError)return 'red';return this.state.lastSuccess&&!this.state.localDirty&&!this.state.wipe&&!this.changes().length?'green':'orange';}
