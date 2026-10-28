@@ -1,0 +1,17 @@
+# File: wrangler.toml
+name = "REPLACE_WITH_EXISTING_WORKER_NAME"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+[vars]
+ALLOWED_ORIGINS = "REPLACE_WITH_FRONTEND_ORIGIN"
+[[d1_databases]]
+binding = "DB"
+database_name = "REPLACE_WITH_APTITUDE_DATABASE_NAME"
+database_id = "REPLACE_WITH_APTITUDE_DATABASE_ID"
+[[d1_databases]]
+binding = "TAH_DB"
+database_name = "quduraty-tahsili"
+database_id = "REPLACE_WITH_TAHSILI_DATABASE_ID"
+[[r2_buckets]]
+binding = "FILES"
+bucket_name = "REPLACE_WITH_EXISTING_BUCKET_NAME"
