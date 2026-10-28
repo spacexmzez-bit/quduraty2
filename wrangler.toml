@@ -3,7 +3,7 @@ name = "quduraty-api"
 main = "worker.js"
 compatibility_date = "2026-10-01"
 [vars]
-ALLOWED_ORIGINS = "https://quduraty.mazendev.com"
+ALLOWED_ORIGINS = "https://qud-tah.mazendev.com"
 [[d1_databases]]
 binding = "DB"
 database_name = "quduraty"
