@@ -1,0 +1,22 @@
+# File: .github/workflows/deploy.yml
+name: Deploy Quduraty Worker
+on:
+  push:
+    branches: [main]
+    paths:
+      - worker.js
+      - wrangler.toml
+      - .github/workflows/deploy.yml
+  workflow_dispatch:
+concurrency:
+  group: quduraty-worker-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
