@@ -1,6 +1,6 @@
 // Quduraty shared-database Worker.
 // Aptitude and Tahsili use one D1 database, separate store namespaces, and independent revisions.
-const STORES = ['groups', 'sections', 'questions', 'wordGroups', 'words', 'files'];
+const STORES = ['groups', 'sections', 'questions', 'wordGroups', 'words', 'files', 'drafts'];
 const MAX_BODY = 8 * 1024 * 1024;
 const BATCH_LIMIT = 2000;
 
@@ -25,11 +25,11 @@ function validate(op, tahsili = false) {
       (typeof d.name !== 'string' || !d.name.trim())) {
     throw new Error('Missing group name');
   }
-  if (['sections', 'questions', 'words'].includes(op.store) &&
+  if (['sections', 'questions', 'words', 'drafts'].includes(op.store) &&
       typeof d.groupId !== 'string') {
     throw new Error('Missing group ID');
   }
-  if (op.store === 'questions' &&
+  if (['questions', 'drafts'].includes(op.store) &&
       (typeof d.text !== 'string' || !d.text.trim() ||
        typeof d.sectionId !== 'string' || !Array.isArray(d.options) ||
        !d.options.length ||
@@ -122,8 +122,6 @@ export default {
 
     try {
       if (path === '/health' && request.method === 'GET') return json({ ok: true });
-
-
 
       const tahsili = path === '/tahsili' || path.startsWith('/tahsili/');
       if (tahsili) path = path.slice('/tahsili'.length) || '/';
