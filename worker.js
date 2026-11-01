@@ -1,18 +1,14 @@
 // Quduraty shared-database Worker.
 // Aptitude and Tahsili use one D1 database, separate store namespaces, and independent revisions.
-const STORES = ['groups', 'sections', 'questions', 'wordGroups', 'words', 'files', 'drafts'];
+const STORES = ['groups', 'sections', 'questions', 'wordGroups', 'words', 'files'];
 const MAX_BODY = 8 * 1024 * 1024;
 const BATCH_LIMIT = 2000;
-const MIGRATION_NAME = 'tahsili-to-shared-d1';
 
 function physicalStore(system, store) {
   return system === 'tahsili' ? `tahsili_${store}` : store;
 }
 function physicalStores(system) {
   return STORES.map(store => physicalStore(system, store));
-}
-function metaId(system) {
-  return system === 'tahsili' ? 2 : 1;
 }
 function validate(op, tahsili = false) {
   if (!op || !STORES.includes(op.store) || typeof op.id !== 'string' ||
@@ -29,11 +25,11 @@ function validate(op, tahsili = false) {
       (typeof d.name !== 'string' || !d.name.trim())) {
     throw new Error('Missing group name');
   }
-  if (['sections', 'questions', 'words', 'drafts'].includes(op.store) &&
+  if (['sections', 'questions', 'words'].includes(op.store) &&
       typeof d.groupId !== 'string') {
     throw new Error('Missing group ID');
   }
-  if (['questions', 'drafts'].includes(op.store) &&
+  if (op.store === 'questions' &&
       (typeof d.text !== 'string' || !d.text.trim() ||
        typeof d.sectionId !== 'string' || !Array.isArray(d.options) ||
        !d.options.length ||
@@ -55,26 +51,16 @@ function validate(op, tahsili = false) {
   }
 }
 
-async function ensureSharedMetadata(db) {
+async function ensureTahsiliMetadata(db) {
+  // Aptitude keeps its existing `meta` table. Tahsili gets an independent
+  // revision row in the same D1 database, without requiring a migration.
   await db.prepare(`CREATE TABLE IF NOT EXISTS qd_sync_meta (
     system TEXT PRIMARY KEY,
     revision INTEGER NOT NULL
   )`).run();
-  await db.prepare(`CREATE TABLE IF NOT EXISTS qd_migrations (
-    name TEXT PRIMARY KEY,
-    status TEXT NOT NULL,
-    source_revision INTEGER,
-    updated_at TEXT NOT NULL
-  )`).run();
   await db.prepare(
     "INSERT OR IGNORE INTO qd_sync_meta(system, revision) VALUES('tahsili', 0)"
   ).run();
-}
-
-async function migrationStatus(db) {
-  await ensureSharedMetadata(db);
-  return db.prepare('SELECT status, source_revision FROM qd_migrations WHERE name=?')
-    .bind(MIGRATION_NAME).first();
 }
 
 async function snapshotFromDatabase(db, system) {
@@ -103,97 +89,6 @@ async function snapshotFromDatabase(db, system) {
     stores[logicalStore].push(JSON.parse(row.data));
   }
   return { revision, stores };
-}
-
-async function sourceTahsiliSnapshot(db) {
-  const [metaResult, rowsResult] = await db.batch([
-    db.prepare('SELECT revision FROM meta WHERE id=1'),
-    db.prepare('SELECT store, id, data FROM records')
-  ]);
-  const revision = metaResult.results?.[0]?.revision;
-  if (!Number.isSafeInteger(revision) || revision < 0) {
-    throw new Error('The old Tahsili database has no valid revision');
-  }
-  const rows = rowsResult.results || [];
-  for (const row of rows) {
-    if (!STORES.includes(row.store)) {
-      throw new Error(`Unexpected store in old Tahsili database: ${row.store}`);
-    }
-    const data = JSON.parse(row.data);
-    if (!data || data.id !== row.id) {
-      throw new Error(`Invalid source record: ${row.store}/${row.id}`);
-    }
-  }
-  return { revision, rows };
-}
-
-async function migrateTahsili(bindings) {
-  const db = bindings.DB;
-  if (!db) throw new Error("D1 database binding 'DB' is missing");
-  await ensureSharedMetadata(db);
-
-  const existing = await db.prepare(
-    'SELECT status, source_revision FROM qd_migrations WHERE name=?'
-  ).bind(MIGRATION_NAME).first();
-  if (existing?.status === 'complete') {
-    return { alreadyComplete: true, sourceRevision: existing.source_revision };
-  }
-  if (!bindings.TAH_DB) {
-    throw new Error("Old TAH_DB binding is missing. Keep it configured until migration completes.");
-  }
-
-  const source = await sourceTahsiliSnapshot(bindings.TAH_DB);
-  const namespaced = physicalStores('tahsili');
-  const placeholders = namespaced.map(() => '?').join(',');
-  const currentCount = await db.prepare(
-    `SELECT COUNT(*) AS count FROM records WHERE store IN (${placeholders})`
-  ).bind(...namespaced).first();
-
-  if (!existing && Number(currentCount?.count || 0) > 0) {
-    throw new Error('Tahsili-prefixed records already exist in the target database. Migration stopped to avoid overwriting data.');
-  }
-
-  await db.prepare(
-    `INSERT INTO qd_migrations(name,status,source_revision,updated_at)
-     VALUES(?,?,?,?)
-     ON CONFLICT(name) DO UPDATE SET status=excluded.status,
-       source_revision=excluded.source_revision, updated_at=excluded.updated_at`
-  ).bind(MIGRATION_NAME, 'running', source.revision, new Date().toISOString()).run();
-
-  // If a previous attempt was interrupted, reset only the Tahsili namespace and safely retry.
-  await db.prepare(`DELETE FROM records WHERE store IN (${placeholders})`)
-    .bind(...namespaced).run();
-
-  const chunkSize = 40;
-  for (let i = 0; i < source.rows.length; i += chunkSize) {
-    const chunk = source.rows.slice(i, i + chunkSize);
-    const statements = chunk.map(row => bindings.DB.prepare(
-      `INSERT INTO records(store,id,data) VALUES(?,?,?)
-       ON CONFLICT(store,id) DO UPDATE SET data=excluded.data`
-    ).bind(`tahsili_${row.store}`, row.id, row.data));
-    if (statements.length) await bindings.DB.batch(statements);
-  }
-
-  const targetCount = await db.prepare(
-    `SELECT COUNT(*) AS count FROM records WHERE store IN (${placeholders})`
-  ).bind(...namespaced).first();
-  if (Number(targetCount?.count || 0) !== source.rows.length) {
-    throw new Error(
-      `Migration verification failed: source has ${source.rows.length} records, target has ${targetCount?.count || 0}`
-    );
-  }
-
-  await db.prepare(
-    "UPDATE qd_sync_meta SET revision=? WHERE system='tahsili'"
-  ).bind(source.revision).run();
-  await db.prepare(
-    `UPDATE qd_migrations SET status='complete', source_revision=?, updated_at=? WHERE name=?`
-  ).bind(source.revision, new Date().toISOString(), MIGRATION_NAME).run();
-
-  const counts = Object.fromEntries(STORES.map(s => [
-    s, source.rows.filter(row => row.store === s).length
-  ]));
-  return { alreadyComplete: false, migratedRecords: source.rows.length, counts, revision: source.revision };
 }
 
 export default {
@@ -228,15 +123,7 @@ export default {
     try {
       if (path === '/health' && request.method === 'GET') return json({ ok: true });
 
-      if (path === '/admin/migrate-tahsili' && request.method === 'POST') {
-        const configuredToken = bindings.MIGRATION_TOKEN;
-        if (!configuredToken) return json({ error: 'MIGRATION_TOKEN secret is not configured on this Worker' }, 503);
-        if (request.headers.get('Authorization') !== `Bearer ${configuredToken}`) {
-          return json({ error: 'Invalid migration token' }, 403);
-        }
-        const result = await migrateTahsili(bindings);
-        return json({ ok: true, ...result });
-      }
+
 
       const tahsili = path === '/tahsili' || path.startsWith('/tahsili/');
       if (tahsili) path = path.slice('/tahsili'.length) || '/';
@@ -244,17 +131,9 @@ export default {
       const db = bindings.DB;
       if (!db) return json({ error: "D1 database binding 'DB' is missing" }, 500);
 
-      if (tahsili) {
-        const status = await migrationStatus(db);
-        if (status?.status !== 'complete') {
-          return json({
-            error: 'Tahsili database consolidation has not completed. Open migration.html and run the one-time migration before syncing Tahsili.'
-          }, 503);
-        }
-      }
+      if (tahsili) await ensureTahsiliMetadata(db);
 
       const physical = physicalStores(system);
-      const id = metaId(system);
       const guard = system === 'tahsili'
         ? "EXISTS(SELECT 1 FROM qd_sync_meta WHERE system='tahsili' AND revision=?)"
         : 'EXISTS(SELECT 1 FROM meta WHERE id=1 AND revision=?)';
