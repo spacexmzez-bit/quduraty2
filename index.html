@@ -28,8 +28,8 @@
 <script>
 // File: index.html — UI and existing local-vault compatibility.
 let db;
-const DB_NAME='QuduratVault',DB_VER=2;
-const vaultStores=['groups','sections','questions','wordGroups','words','files'];
+const DB_NAME='QuduratVault',DB_VER=3;
+const vaultStores=['groups','sections','questions','wordGroups','words','files','drafts'];
 const el=id=>document.getElementById(id);
 function initDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,DB_VER);req.onupgradeneeded=()=>{for(const store of vaultStores)if(!req.result.objectStoreNames.contains(store))req.result.createObjectStore(store,{keyPath:'id'});};req.onsuccess=()=>{db=req.result;db.onversionchange=()=>db.close();resolve();};req.onerror=()=>reject(req.error);req.onblocked=()=>alert('أغلق النوافذ الأخرى ثم أعد فتح التطبيق');});}
 const dbOps={
@@ -133,7 +133,7 @@ function flattenImport(input){
 function buildImport(input,current){
  const items=flattenImport(input),ops=[];
  const groups=[...current.groups],sections=[...current.sections],wordGroups=[...current.wordGroups];
- const storedQuestions=current.questions.map(q=>({...q}));
+ const storedQuestions=current.questions.map(q=>({...q})), storedDrafts=[...(current.drafts||[])];
  const baseKey=q=>JSON.stringify([q.groupId,q.sectionId,q.type,q.text,q.options,q.correct]);
  const wKeys=new Set(current.words.map(w=>JSON.stringify([w.groupId,w.word,w.meaning])));
  let questions=0,words=0,duplicates=0,updated=0;
@@ -141,6 +141,7 @@ function buildImport(input,current){
  items.forEach((item,index)=>{
   try{
    if(!item||typeof item!=='object'||Array.isArray(item))throw new Error('العنصر ليس كائناً');
+   if(item.Need_Photo!=null&&typeof item.Need_Photo!=='boolean')throw new Error('Need_Photo يجب أن تكون true أو false أو null');
    if('word' in item || 'meaning' in item){
     const word=str(item.word),meaning=str(item.meaning);if(!word||!meaning)throw new Error('الكلمة أو المعنى مفقود');
     const name=str(item.group)||'مفردات عامة';let g=wordGroups.find(g=>g.name===name);
@@ -148,13 +149,14 @@ function buildImport(input,current){
     const key=JSON.stringify([g.id,word,meaning]);if(wKeys.has(key)){duplicates++;return;}wKeys.add(key);
     put('words',{id:uid('w'),groupId:g.id,word,meaning,starred:false,completed:false});words++;return;
    }
-   const question=normalizeQuestion(item);
+   const question=normalizeQuestion(item);if(item.Need_Photo===true&&question.type!=='كمي')throw new Error('Need_Photo متاح للأسئلة الكمية فقط؛ حدد type كمي');
    const name=str(item.group)||'تجميعات القدرات';let g=groups.find(g=>g.name===name);
    if(!g){g={id:uid('g'),name};groups.push(g);put('groups',g);}
    const num=str(item.sectionNum??1),title=str(item.sectionTitle??item.section)||'القسم العام';
    let s=sections.find(s=>s.groupId===g.id && String(s.num)===num && s.title===title);
    if(!s){s={id:uid('s'),groupId:g.id,num,title};sections.push(s);put('sections',s);}
    const candidate={groupId:g.id,sectionId:s.id,...question};
+   if(storedDrafts.some(q=>baseKey(q)===baseKey(candidate))){duplicates++;return;}
    const matches=storedQuestions.filter(q=>baseKey(q)===baseKey(candidate));
    const exact=matches.find(q=>str(q.passage)===question.passage&&str(q.questionType)===question.questionType);
    if(exact){duplicates++;return;}
@@ -165,20 +167,20 @@ function buildImport(input,current){
     const old=compatible[0];old.passage=old.passage||question.passage;old.questionType=old.questionType||question.questionType;put('questions',old);updated++;return;
    }
    if(!question.passage&&!question.questionType&&matches.length){duplicates++;return;}
-   const data={id:uid('q'),...candidate,fileId:null,starred:false,completed:false};storedQuestions.push(data);put('questions',data);questions++;
+   const data={id:uid('q'),...candidate,fileId:null,starred:false,completed:false};if(item.Need_Photo===true){storedDrafts.push(data);data.sourceNumber=str(item.questionNum??item.questionNumber??item.number??item.order??(index+1));put('drafts',data);}else {storedQuestions.push(data);put('questions',data);}questions++;
   }catch(error){throw new Error(`العنصر ${index+1}: ${error.message}`);}
  });
  return {ops,questions,words,duplicates,updated};
 }
 
 
-const SYNC_STORES=['groups','sections','questions','wordGroups','words','files'];
+const SYNC_STORES=['groups','sections','questions','wordGroups','words','files','drafts'];
 function emptySyncStores(){return Object.fromEntries(SYNC_STORES.map(s=>[s,[]]));}
 function wireRecord(data){const result={...data};delete result.data;return result;}
 function sameRecord(a,b){return JSON.stringify(a??null)===JSON.stringify(b??null);}
 class ManualSync {
  constructor({api,load,save,fetcher=(...args)=>window.fetch(...args),onChange=()=>{}}){this.api=api.replace(/\/$/,'');this.load=load;this.save=save;this.fetcher=fetcher;this.onChange=onChange;this.syncing=false;this.ready=this.initialize();}
- async initialize(){this.state=await this.load()||{base:{revision:null,stores:emptySyncStores()},working:emptySyncStores(),wipe:false,lastSuccess:null,lastError:null,localDirty:false};this.onChange();}
+ async initialize(){this.state=await this.load()||{base:{revision:null,stores:emptySyncStores()},working:emptySyncStores(),wipe:false,lastSuccess:null,lastError:null,localDirty:false};for(const store of SYNC_STORES){this.state.base.stores[store]??=[];this.state.working[store]??=[];}this.onChange();}
  changes(){const ops=[];for(const store of SYNC_STORES){const old=new Map(this.state.base.stores[store].map(x=>[x.id,x]));const now=new Map(this.state.working[store].map(x=>[x.id,x]));for(const [id,data]of now)if(!sameRecord(old.get(id),data))ops.push({kind:'put',store,id,data});for(const id of old.keys())if(!now.has(id))ops.push({kind:'delete',store,id});}return ops;}
  get color(){if(!this.state)return 'orange';if(this.state.lastError)return 'red';return this.state.lastSuccess&&!this.state.localDirty&&!this.state.wipe&&!this.changes().length?'green':'orange';}
  async persist(){await this.save(structuredClone(this.state));this.onChange();}
@@ -196,6 +198,7 @@ class ManualSync {
    if(!this.api)throw new Error('لم يتم إعداد عنوان الخادم في QUDURATY_API');
    let remote=await this.request('/state');
    if(!remote.stores||!Number.isSafeInteger(remote.revision))throw new Error('Invalid server snapshot');
+   if(!Array.isArray(remote.stores.drafts))throw new Error('حدث Worker أولاً لدعم مسودات الصور');
    if(discard){this.state={base:remote,working:structuredClone(remote.stores),wipe:false,lastSuccess:new Date().toISOString(),lastError:null,localDirty:false};await this.persist();return;}
    if(this.state.wipe){
     if(SYNC_STORES.some(s=>remote.stores[s].length)){const result=await this.request('/wipe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({revision:remote.revision})});remote={revision:result.revision,stores:emptySyncStores()};}
@@ -296,6 +299,7 @@ const QUDURATY_API = (()=>{try{return localStorage.getItem('QuduratyApiURL')||''
   try{
    const current=Object.fromEntries(await Promise.all(stores.map(async s=>[s,await rawAll(s)])));
    const result=buildImport(JSON.parse((await file.text()).replace(/^\uFEFF/,'')),current);
+   if(result.ops.some(op=>op.store==='drafts')){const proceed=await collectImportPhotos(result);if(!proceed)return;}
    if(result.ops.length>2000)throw new Error('ملف كبير؛ قسمه إلى ملفات أصغر (حتى 2000 عملية لكل استيراد)');
    if(result.ops.length)await batch(result.ops);
    await refreshUI();
@@ -330,12 +334,49 @@ const QUDURATY_API = (()=>{try{return localStorage.getItem('QuduratyApiURL')||''
    switchPage('questions');await refreshUI();alert(api?'تم الحذف محلياً؛ اضغط مزامنة الآن لتطبيق الحذف على الخادم':'تم حذف جميع البيانات');
   }catch(error){alert('تعذر إكمال الحذف: '+error.message);}
  };
+ // Drafts are separate sync records; they are never included in quiz or question queries.
+ function photoFileOp(file){
+  if(!file||!file.type.startsWith('image/')||file.size>4*1024*1024)throw new Error('اختر صورة لا يزيد حجمها عن 4MB');
+  const id=uid('f');return {kind:'put',store:'files',id,data:{id,data:file,type:file.type,name:file.name}};
+ }
+ function draftView(d,groups,sections){
+  const box=document.createElement('div');box.className='item-card';
+  const group=groups.find(x=>x.id===d.groupId),section=sections.find(x=>x.id===d.sectionId);
+  const info=document.createElement('p');info.textContent=`المجموعة: ${group?.name||'—'} • ${location.pathname.endsWith('tahsili.html')?'الدرس':'القسم'}: ${section?`${section.num} — ${section.title}`:'—'} • رقم السؤال: ${d.sourceNumber||'—'}`;box.append(info);
+  const question=document.createElement('p');question.className='text';question.textContent=d.text;box.append(question);
+  const choices=document.createElement('details'),summary=document.createElement('summary');summary.textContent='عرض الخيارات';choices.append(summary);
+  (d.options||[]).forEach((v,i)=>{if(!v)return;const line=document.createElement('div');line.textContent=`${['أ','ب','ج','د'][i]||i+1}: ${v}`;choices.append(line);});box.append(choices);
+  const label=document.createElement('label');label.textContent='رفع صورة';const input=document.createElement('input');input.type='file';input.accept='image/*';label.append(input);box.append(label);return {box,input};
+ }
+ function createDraftDialog(title){const dialog=document.createElement('dialog');dialog.style.cssText='max-width:800px;width:94%;max-height:90vh;overflow:auto';const head=document.createElement('h2');head.textContent=title;dialog.append(head);document.body.append(dialog);return dialog;}
+ async function collectImportPhotos(result){
+  const drafts=result.ops.filter(x=>x.store==='drafts'), currentGroups=await rawAll('groups'),currentSections=await rawAll('sections');
+  const groups=[...currentGroups,...result.ops.filter(x=>x.store==='groups').map(x=>x.data)],sections=[...currentSections,...result.ops.filter(x=>x.store==='sections').map(x=>x.data)];
+  return new Promise(resolve=>{const dialog=createDraftDialog('أسئلة تحتاج إلى صورة');const desc=document.createElement('p');desc.textContent='أضف الصور الآن أو احفظ الأسئلة المتبقية كمسودات.';dialog.append(desc);
+   const rows=drafts.map(op=>{const v=draftView(op.data,groups,sections);dialog.append(v.box);return {op,...v};});
+   const actions=document.createElement('div');actions.className='actions';const cancel=document.createElement('button');cancel.type='button';cancel.textContent='إلغاء الاستيراد';const ok=document.createElement('button');ok.type='button';ok.className='primary';ok.textContent='تأكيد';actions.append(cancel,ok);dialog.append(actions);
+   let finished=false;const finish=value=>{if(finished)return;finished=true;dialog.close();dialog.remove();resolve(value)};cancel.onclick=()=>finish(false);dialog.addEventListener('cancel',e=>{e.preventDefault();finish(false)});
+   ok.onclick=()=>{try{const missing=rows.filter(x=>!x.input.files[0]).length;if(missing&&!confirm(`لم تضف صوراً إلى ${missing} سؤال. هل تريد حفظها في المسودات؟`))return;const ready=rows.filter(row=>row.input.files[0]).map(row=>({row,file:photoFileOp(row.input.files[0])}));for(const {row,file} of ready){row.op.store='questions';row.op.data.fileId=file.id;delete row.op.data.sourceNumber;}result.ops.push(...ready.map(x=>x.file));finish(true);}catch(e){alert(e.message)}};dialog.showModal();
+  });
+ }
+ async function openPhotoDrafts(){
+  const dialog=createDraftDialog('مسودات الأسئلة التي تحتاج صورة');const content=document.createElement('div');dialog.append(content);const close=document.createElement('button');close.textContent='إغلاق';close.onclick=()=>{dialog.close();dialog.remove()};dialog.append(close);dialog.addEventListener('cancel',()=>setTimeout(()=>dialog.remove(),0));
+  async function render(){const [drafts,groups,sections]=await Promise.all(['drafts','groups','sections'].map(rawAll));content.replaceChildren();if(!drafts.length){content.textContent='لا توجد مسودات.';return;}
+   for(const d of drafts){const row=draftView(d,groups,sections),actions=document.createElement('div');actions.className='actions';const add=document.createElement('button');add.className='primary';add.textContent='تأكيد الصورة';const no=document.createElement('button');no.textContent='لا يحتاج صورة';const del=document.createElement('button');del.className='danger';del.textContent='حذف نهائي';actions.append(add,no,del);row.box.append(actions);content.append(row.box);
+    async function finalize(withPhoto){try{const latest=(await rawAll('drafts')).find(x=>x.id===d.id);if(!latest)throw new Error('لم تعد المسودة موجودة');const ops=[];let fileId=null;if(withPhoto){const file=photoFileOp(row.input.files[0]);ops.push(file);fileId=file.id;}const q={...latest,fileId};delete q.sourceNumber;ops.push({kind:'put',store:'questions',id:q.id,data:q},{kind:'delete',store:'drafts',id:q.id});await batch(ops);await refreshUI();await render();}catch(e){alert(e.message)}}
+    add.onclick=()=>finalize(true);no.onclick=()=>finalize(false);del.onclick=async()=>{if(!confirm('حذف المسودة نهائياً؟'))return;try{await batch([{kind:'delete',store:'drafts',id:d.id}]);await render()}catch(e){alert(e.message)}};
+   }
+  }
+  try{await render();dialog.showModal();}catch(e){dialog.remove();alert(e.message)}
+ }
+ window.addEventListener('DOMContentLoaded',()=>{const button=document.createElement('button');button.type='button';button.textContent='مسودات الصور';button.onclick=openPhotoDrafts;document.querySelector('#page-questions .toolbar .actions').append(button);});
  // Replace sequential cascades with one atomic metadata transaction.
  async function cascade(kind,id,message){
   if(!confirm(message))return;
   const ops=[],del=(store,id)=>ops.push({kind:'delete',store,id});
   if(kind==='groups'||kind==='sections'||kind==='questions'){
    const questions=await rawAll('questions');
+   if(kind==='groups'||kind==='sections')for(const d of await rawAll('drafts'))if(kind==='groups'?d.groupId===id:d.sectionId===id)del('drafts',d.id);
    for(const q of questions.filter(q=>kind==='groups'?q.groupId===id:kind==='sections'?q.sectionId===id:q.id===id)){if(q.fileId)del('files',q.fileId);del('questions',q.id);}
    if(kind==='groups')for(const s of (await rawAll('sections')).filter(s=>s.groupId===id))del('sections',s.id);
   }
@@ -409,7 +450,7 @@ const QUDURATY_API = (()=>{try{return localStorage.getItem('QuduratyApiURL')||''
 <script>
 (()=>{
  const isTah=location.pathname.endsWith('tahsili.html');
- const byId=id=>document.getElementById(id), st=['groups','sections','questions','wordGroups','words','files'];
+ const byId=id=>document.getElementById(id), st=['groups','sections','questions','wordGroups','words','files','drafts'];
  const clean=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
  const oldCard=buildQuestionCard;
  buildQuestionCard=function(q,done){const card=oldCard(q,done);card.dataset.questionId=q.id;const button=document.createElement('button');button.textContent='تعديل';button.onclick=()=>editQuestion(q.id);card.querySelector('.actions')?.append(button);return card;};
